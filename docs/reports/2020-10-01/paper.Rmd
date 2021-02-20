@@ -1,0 +1,87 @@
+---
+title: "SPAN MRI Analytics Pilot Data Report: Lesion Volume Evaluation in Iowa Data"
+author: "Ryan P. Cabeen"
+date: "2020-10-01"
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{makecell}
+output: 
+  pdf_document:
+    keep_tex: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+library(stargazer)
+library(ggplot2)
+library(gridExtra)
+library(xtable)
+library(papeR)
+library(scales)
+library(ggplot2)
+
+df <- read.csv("table-iowa-merged.csv")
+df$manual <- 0.5 * (df$manual_personA + df$manual_personB)
+df$auto <- df$value
+```
+
+# Full Table of Lesion Volumes 
+
+```{r measures, message=FALSE, warning=FALSE, error=FALSE, echo=TRUE}
+print(df[,c("subject", "auto", "manual", "manual_personA", "manual_personB")])
+```
+
+## Manual Volume Mean and Standard Deviation
+
+```{r sum_manual, message=FALSE, warning=FALSE, error=FALSE, echo=TRUE}
+mean(df$manual)
+sd(df$manual)
+```
+
+## Automated Volume Mean and Standard Deviation
+
+```{r sum_auto, message=FALSE, warning=FALSE, error=FALSE, echo=TRUE}
+mean(df$auto)
+sd(df$auto)
+```
+
+\newpage
+
+# Comparing the two manual segmentations
+
+## Correlation
+
+```{r cor_manual, message=FALSE, warning=FALSE, error=FALSE, echo=TRUE}
+cor(df$manual_personA, df$manual_personB)
+cor.test(df$manual_personA, df$manual_personB)
+```
+
+## Root-mean-square error
+
+```{r rmse_manual, message=FALSE, warning=FALSE, error=FALSE, echo=TRUE}
+mean((df$manual_personA - df$manual_personB)**2)**(0.5)
+```
+
+# Comparing automated and manual segmentations
+
+## Correlation
+
+```{r cor_auto, message=FALSE, warning=FALSE, error=FALSE, echo=TRUE}
+cor(df$manual, df$auto)
+cor.test(df$manual, df$auto)
+```
+
+## Root-mean-square error
+
+```{r rmse_auto, message=FALSE, warning=FALSE, error=FALSE, echo=TRUE}
+mean((df$manual - df$auto)**2)**(0.5)
+```
+
+```{r plot_all, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=10, fig.width=7}
+manual.plot <- ggplot(data=df, aes(x=manual_personA, y=manual_personB, label=subject)) + geom_point() + geom_label() + geom_smooth(method="lm") + xlim(-1,25) + ylim(-1,25) + ggtitle("Comparing two manual segmenations")
+
+auto.plot <- ggplot(data=df, aes(x=auto, y=manual, label=subject)) + geom_point() + geom_label() + geom_smooth(method="lm") + xlim(-1,25) + ylim(-1,25) + ggtitle("Comparing automated and manual segmentation")
+
+grid.arrange(manual.plot, auto.plot, nrow = 2)
+```

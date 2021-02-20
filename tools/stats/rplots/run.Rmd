@@ -1,0 +1,135 @@
+---
+title: "SPAN Pilot Image Analytics"
+output:
+  html_document:
+    keep_md: yes
+  word_document: default
+---
+
+```{r global_options, include=FALSE}
+w = 7
+h = 7
+#knitr::opts_chunk$set(fig.width=w, fig.height=h, fig.path='figs/',
+#                      echo=FALSE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r package setup, include=FALSE, echo=FALSE}
+packages <- c("ggplot2", "dplyr", "lavaan", "plyr", "cowplot", "rmarkdown", 
+              "readr", "caTools", "bitops")
+
+if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+  install.packages(setdiff(packages, rownames(installed.packages())))  
+}
+
+library(cowplot)
+library(dplyr)
+library(readr)
+
+source("rainclouds.R")
+
+# width and height variables for saved plots
+
+# Make the figure folder if it doesn't exist yet
+dir.create('figs', showWarnings = FALSE)
+
+df <- read.csv("table.csv")
+
+plotSingle <- function(mydf, myxlab, myylab, myname)
+{
+  myplot <- ggplot(mydf,aes(x=group, y=value, fill=group, color=group)) +
+    geom_point(position=position_jitter(width=.15), size=2, alpha=0.5) +
+    geom_boxplot(aes(x=group, y=value), outlier.shape=NA, alpha=0.25, width=0.75) +
+    xlab(myxlab) + ylab(myylab) + coord_flip() + theme_cowplot() + 
+    guides(fill = FALSE, colour = FALSE)
+  ggsave(sprintf('./figs/%s.pdf', myname))
+  return(myplot)
+}
+
+plotMulti <- function(mydf, myxlab, myylab, myname)
+{
+  myplot <- ggplot(mydf,aes(x=group, y=value, fill=name, color=name)) +
+    geom_point(position=position_jitter(width=.15), size=2, alpha=0.5) +
+    geom_boxplot(aes(x=group, y=value), outlier.shape=NA, alpha=0.25, width=0.75) +
+    xlab(myxlab) + ylab(myylab) + coord_flip() + theme_cowplot() + 
+    theme(legend.position="top") 
+  ggsave(sprintf('./figs/%s.pdf', myname))
+  return(myplot)
+}
+```
+
+## Volumetrics
+
+```{r, include=FALSE, echo=FALSE}
+subdf <- df[df$name %in% c("volume_lesion", "volume_tissue", "volume_csf"),]; 
+subdf$group <- subdf$mysite
+myplot <- plotMulti(subdf, "Site", "Region Volume (cubic mm)", "lesion_volume")
+```
+```{r, include=TRUE}
+myplot
+```
+
+# Quantitative Parameters
+
+```{r, include=FALSE, echo=FALSE}
+
+subdf <- df[df$name %in% c("csf", "tissue", "lesion") & df$metric == "adc_rate_mean",]
+subdf$group <- subdf$mysite
+myplot <- plotMulti(subdf, "Site", "ADC Rate Average", "all_adc_rate")
+```
+```{r, include=TRUE}
+myplot
+```
+
+```{r, include=FALSE, echo=FALSE}
+
+subdf <- df[df$name %in% c("csf", "tissue", "lesion") & df$metric == "adc_rate_harm_mean",]
+subdf$group <- subdf$mysite
+myplot <- plotMulti(subdf, "Site", "ADC Rate Average (Harmonized)", "all_adc_rate_harm")
+```
+```{r, include=TRUE}
+myplot
+```
+
+```{r, include=FALSE, echo=FALSE}
+
+subdf <- df[df$name %in% c("csf", "tissue", "lesion") & df$metric == "t2_rate_mean",]
+subdf$group <- subdf$mysite
+myplot <- plotMulti(subdf, "Site", "T2 Rate Average", "all_t2_rate")
+```
+```{r, include=TRUE}
+myplot
+```
+
+```{r, include=FALSE, echo=FALSE}
+
+subdf <- df[df$name %in% c("csf", "tissue", "lesion") & df$metric == "t2_rate_harm_mean",]
+subdf$group <- subdf$mysite
+myplot <- plotMulti(subdf, "Site", "T2 Rate Average (Harmonized)", "all_t2_rate_harm")
+```
+```{r, include=TRUE}
+myplot
+```
+
+# Quality Assessment 
+
+```{r, include=FALSE, echo=FALSE}
+
+subdf <- df[df$name == "snr" & df$metric == "t2_qa",]
+subdf$group <- subdf$mysite
+myplot <- plotSingle(subdf, "Site", "T2 Scan SNR", "t2_snr")
+```   
+```{r, include=TRUE}
+myplot
+```
+
+```{r, snr_adc, include=FALSE, echo=FALSE}
+
+subdf <- df[df$name == "snr" & df$metric == "adc_qa",]
+subdf$group <- subdf$mysite
+myplot <- plotSingle(subdf, "Site", "ADC Scan SNR", "adc_snr")
+```
+```{r, include=TRUE}
+myplot
+```
+

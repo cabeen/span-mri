@@ -1,0 +1,114 @@
+<milf atlas="MDA_2006">
+	<meta>
+		<creator>amg</creator>
+		<date>2007-05-130 14:21:53</date>
+	</meta>
+	<structure>
+		<label id="1" color="#ffffff" abbreviation="CNS" name="Central Nervous System">
+			<label id="34" color="#330000" abbreviation="SP" name="Spinal Cord">
+				<label id="21" color="#0" abbreviation="C" name="Central Canal, Spinal Cord/Medulla">
+				</label>
+			</label>
+			<label id="1000" color="#ffffff" abbreviation="BR" name="Brain">
+				<label id="8" color="#ff00" abbreviation="FB" name="Forebrain">
+					<label id="16" color="#0" abbreviation="VL" name="Lateral Ventricle">
+					</label>
+					<label id="17" color="#0" abbreviation="IVF" name="Intraventricular Foramen">
+					</label>
+					<label id="27" color="#ff00" abbreviation="CTX" name="Cerebral Cortex">
+						<label id="98" color="#6600" abbreviation="HIP" name="Hippocampus">
+							<label id="1001" color="#9900" abbreviation="CA1" name="CA1 Region">
+							</label>
+							<label id="1002" color="#6633" abbreviation="CA3" name="CA3 Region">
+							</label>
+							<label id="1003" color="#336600" abbreviation="DG" name="Dentate Gyrus">
+							</label>
+						</label>
+						<label id="99" color="#669900" abbreviation="OLF" name="Olfactory System">
+						</label>
+						<label id="1004" color="#99cc00" abbreviation="FRO" name="Frontal Cortex">
+						</label>
+						<label id="1005" color="#99ff33" abbreviation="PERI" name="Perirhinal Cortex">
+						</label>
+						<label id="1006" color="#66ff66" abbreviation="ENT" name="Entorhinal Cortex">
+						</label>
+					</label>
+					<label id="28" color="#cc99" abbreviation="BG" name="Basal Ganglia">
+						<label id="101" color="#cc81" abbreviation="CP" name="Caudoputamen">
+						</label>
+					</label>
+					<label id="84" color="#ffff00" abbreviation="In" name="Olfactory Nerve">
+					</label>
+					<label id="86" color="#ffff00" abbreviation="cc" name="Corpus Callosum">
+					</label>
+					<label id="90" color="#ffff00" abbreviation="aco" name="Anterior Commissure, Olfactory Limb">
+					</label>
+					<label id="91" color="#ffff00" abbreviation="lot" name="Lateral Olfactory Tract">
+					</label>
+					<label id="93" color="#ffff00" abbreviation="int" name="Internal Capsule">
+					</label>
+					<label id="94" color="#ffff00" abbreviation="act" name="Anterior Commissure, Temporal Limb">
+					</label>
+					<label id="112" color="#ffff00" abbreviation="st" name="Stria Terminalis">
+					</label>
+					<label id="1008" color="#99ff99" abbreviation="AMY" name="Amygdala">
+					</label>
+				</label>
+				<label id="18" color="#0" abbreviation="V3" name="Third Ventricle">
+				</label>
+				<label id="31" color="#ff" abbreviation="IB" name="Interbrain">
+					<label id="64" color="#d7" abbreviation="HY" name="Hypothalamus">
+					</label>
+					<label id="65" color="#ff" abbreviation="TH" name="Thalamus">
+					</label>
+					<label id="96" color="#ffff00" abbreviation="fr" name="Fasciculus Retroflexus">
+					</label>
+					<label id="97" color="#ffff00" abbreviation="sm" name="Stria Medullaris">
+					</label>
+				</label>
+				<label id="32" color="#ffff" abbreviation="MB" name="Midbrain">
+					<label id="19" color="#0" abbreviation="AQ" name="Cerebral Aqueduct">
+					</label>
+					<label id="107" color="#e1e1" abbreviation="IPN" name="Interpeduncular Nucleus">
+					</label>
+					<label id="108" color="#c8c8" abbreviation="SN" name="Substantia Nigra">
+					</label>
+					<label id="110" color="#b5b4" abbreviation="IC" name="Inferior Colliculus">
+					</label>
+					<label id="111" color="#a1a1" abbreviation="SC" name="Superior Colliculus">
+					</label>
+					<label id="1010" color="#e1e1" abbreviation="PAG" name="Periaqueductal Grey">
+					</label>
+					<label id="1011" color="#ffff33" abbreviation="cpd" name="Cerebral peduncle">
+					</label>
+				</label>
+				<label id="33" color="#ff00ff" abbreviation="HB" name="Hindbrain">
+					<label id="9" color="#ff0000" abbreviation="CB" name="Cerebellum">
+						<label id="12" color="#ffff00" abbreviation="cbf" name="Cerebellar Related Fiber Tracts">
+						</label>
+						<label id="29" color="#ff0000" abbreviation="CBX" name="Cerebellar Cortex">
+						</label>
+						<label id="30" color="#eb0000" abbreviation="CBN" name="Cerebellar Nuclei">
+						</label>
+					</label>
+					<label id="20" color="#0" abbreviation="4V" name="Fourth Ventricle">
+					</label>
+					<label id="103" color="#d700d7" abbreviation="P" name="Pons">
+					</label>
+					<label id="104" color="#c800c8" abbreviation="MY" name="Medulla">
+					</label>
+				</label>
+				<label id="85" color="#ffff00" abbreviation="IIn" name="Optic Nerve">
+					<label id="92" color="#ffff00" abbreviation="och" name="Optic Chiasm">
+					</label>
+				</label>
+				<label id="95" color="#ffff00" abbreviation="fxs" name="Fornix System">
+				</label>
+				<label id="1007" color="#330033" abbreviation="PIT" name="Pituitary">
+				</label>
+			</label>
+			<label id="1009" color="#ffff" abbreviation="RET" name="Retina">
+			</label>
+		</label>
+	</structure>
+</milf>

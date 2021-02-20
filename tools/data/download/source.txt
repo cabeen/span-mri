@@ -1,0 +1,8 @@
+url: https://resource.loni.usc.edu/
+date: July 28, 2020
+
+MacKenzie‐Graham, A. J., Lee, E. F., Dinov, I. D., Yuan, H., Jacobs, R. E., &
+Toga, A. W. (2007). Multimodal, multidimensional models of mouse brain.
+Epilepsia, 48, 75-81.
+
+http://www.loni.usc.edu/Software/MBAT

@@ -1,0 +1,99 @@
+Zoom call with Cenk
+2020-10-01 from 10am-noon pacific time
+
+We reviewed all 2day timepoint scans, looking at lesion segmentations relative
+to ADC and T2 maps.
+
+Conclusions
+===========
+
+ADC and T2 can provide differing contrasts 
+* ADC shows fluid exchange due to
+massive cellular depolarization, causing fluid, potassium, and sodium to enter
+the cell, causing swelling.  These cells are the ones that are least likely to
+recover and more truely constitute lesion 
+* T2 shows fluid influix due to
+vasogenic edema, which follows a different timecourse from ADC.  T2 also shows
+the extent that this influx macroscopically diffuses throughout tissue (not
+visible in though ADC), so T2 may change in otherwise healthy tissue (or at least tissue able to recover
+
+UIowa did not show as strong contrast as other sites, particularly low contrast
+in ADC scans
+
+All sites included cases with lower ADC but not change in T2, thus they were
+not included in the segmentation.  We should consider how to address this
+
+A few cases showed change in T2 but not ADC, suggesting that somewhat healthy tissue is included in lesion
+
+JHU scans seemed to pick up lesion in olfactory bulb.  We can consider making
+the T2 threshold more conservative to fix this.
+
+Yale's surface coil greatly affect SNR on the ventral surface of the brain, which will bias lesion volumes systematically
+
+Some scans showed signal gradient on the surface where the doppler attachment
+would likely be.  While the skull is not broken, this is a traumatic event that
+could leave dried blood that could affect signal.  It is likely that our skull
+stripping is affected by this signal drop, resulting in clipping away of some brain at the boundary near the drop. 
+
+Some cases have strokes in the posterior cerebral artery.  This can happen when
+the filament is not precisely placed to block only the MCA.  It is also
+possible in extreme cases for only the PCA to blocked, with the MCA filling by
+collateral flow.  The anterior cerebral artery should fill by collateral flow
+in most cases.
+
+Lesion location is an important visual cue.  We do not include atlas registration in the pipeline now, but we may consider using a "lesion prior" to exclude regions outside where an MCA stroke would show. 
+
+TODO
+====
+
+Email Pat about TTC.  If we can register those images to our MRIs that could
+help answer the question about ADC vs T2 disagreements.
+
+Consider ways to address issues above
+
+Share segmentation images with Cenk
+
+Focus on quantative data in the paper!
+
+Summary of cases:
+
+KX0059: bogus anterior lesion
+KW9352: bogus contralateral lesion
+UI0002: duplicate of MM0200 from UT
+QC3810: trauma due to filament? 
+MM0204: hippocampal lesion
+AM5399: very little lesion contrast on ADC from Iowa
+QC3020: example of PCA infarct
+
+QC3023: segmentation includes fluid influx w/o lesion
+
+VH5210: missing cortical ADC lesion (no fluid influx?)
+QC3021: missing cortical ADC lesion (no fluid influx?)
+
+QC3899: missing edge of T2 lesion due to signal gradient
+AM3691: missing edge of T2 lesion due to signal gradient
+VH2039: missing edge of T2 lesion due to signal gradient
+QC2312: missing edge of T2 lesion due to signal gradient
+
+
+
+Notes
+=====
+
+Vasogenic adema 
+
+JHU shows bogus olfactory bulb lesion 
+
+T2 rate is due to water influx adema
+
+T2 and ADC don’t match at iowa
+
+Doppler attachment and possible signal dropout 
+
+Take will have systematically lower lesion volume due to signal drop off of surface coil
+
+Dried blood may affect signal
+
+Ask pat for ttc and cc cenk
+
+

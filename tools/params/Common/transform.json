@@ -1,0 +1,6 @@
+{
+  "name": "VolumeTransform",
+  "parameters": {
+    "interp": "Tricubic"
+  }
+}

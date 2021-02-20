@@ -1,0 +1,8 @@
+Steps to make data:
+
+for t in harm fit; do for c in {t2,t2star,adc}_{rate,base}; do for s in level1/*/*; do qsubcmd qit --verbose VolumeHistogram --mask ${s}/native.mask/brain.mask.nii.gz --input ${s}/native.${t}/${c}.nii.gz --lower ThreeStd --upper ThreeStd --output ${s}/native.${t}/${c}.hist.csv; done done done
+
+qit --verbose MapCat --pattern 'level1/%{time}/%{subject}/native.%{type}/%{param}.hist.csv' --vars time=early,late subject=level1/ids.txt type=fit,harm param=t2_rate,t2_base,adc_rate,adc_base --input-name middle --skip --output hists.csv
+
+qit TableMerge --left level2/tables/sites.csv --right hists.csv --output merged.csv --field subject
+

@@ -1,0 +1,9 @@
+{
+  "name": "VolumeResample",
+  "parameters": {
+    "interp": "Tricubic",
+    "dx": 0.15,
+    "dy": 0.15,
+    "dz": 0.15
+  }
+}

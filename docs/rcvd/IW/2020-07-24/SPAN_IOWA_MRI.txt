@@ -1,0 +1,4 @@
+Site: Iowa
+T2 echo-times: 45 30 15
+b-values: 1000 500 0
+T2* echo-times: 5 10 15 20
