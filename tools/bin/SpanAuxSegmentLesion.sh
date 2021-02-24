@@ -45,7 +45,7 @@ function runit
 workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
 
-t2RateThreshLesion=0.75
+t2RateThreshLesion=0.80
 adcRateThreshLesion=1.25
 adcBaseThreshLesion=0.75
 sigmoidHighThreshLesion=0.5
@@ -156,15 +156,6 @@ runit qit --verbose VolumeThreshold \
 runit qit --verbose MaskDilate \
 	--input ${tmp}/lesion.low.mask.nii.gz \
 	--num ${numDilateLesion} \
-	--output ${tmp}/lesion.island.mask.nii.gz
-
-runit qit --verbose MaskLargest \
-	--input ${tmp}/lesion.island.mask.nii.gz \
-	--output ${tmp}/lesion.largest.mask.nii.gz
-
-runit qit --verbose MaskIntersection \
-	--left ${tmp}/lesion.largest.mask.nii.gz \
-	--right ${tmp}/lesion.low.mask.nii.gz \
 	--output ${tmp}/lesion.mask.nii.gz
 
 echo "segmenting csf"
