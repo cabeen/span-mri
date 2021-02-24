@@ -9,8 +9,8 @@
 #
 ##############################################################################
 
-if [ $# -ne "4" ]; then
-    echo "Usage: $(basename $0) <input> <brain-mask> <csf-mask> <output>"
+if [ $# -ne "3" ]; then
+    echo "Usage: $(basename $0) <brain-mask> <csf-mask> <output>"
     exit 1
 fi
 
@@ -28,43 +28,24 @@ function runit
 
 echo "started"
 
-input=$1
-brain=$2
-csf=$3
-output=$4
+brain=$1
+csf=$2
+output=$3
 
-if [ ! -e ${input} ]; then echo "Error: input file not found: ${input}"; exit; fi
-if [ ! -e ${csf} ]; then echo "Error: csf file not found: ${csf}"; exit; fi
+if [ ! -e ${brain} ]; then echo "Error: brain mask not found: ${brain}"; exit; fi
+if [ ! -e ${csf} ]; then echo "Error: csf mask not found: ${csf}"; exit; fi
 
 tmp=${output}.tmp.${RANDOM}
 mkdir -p ${tmp}
 mkdir -p ${tmp}/seg
 
-echo "using input: ${input}"
 echo "using brain: ${brain}"
 echo "using csf: ${csf}"
 echo "using output: ${output}"
 echo "using intermediate: ${tmp}"
 
-runit qit --verbose VolumeMask \
-  --input ${input} \
-  --mask ${brain} \
-  --output ${tmp}/brain.nii.gz
-
-runit qit --verbose VolumeRegisterLinearAnts \
-  --rigid \
-  --input ${tmp}/brain.nii.gz \
-  --ref ${root}/data/brain.nii.gz \
-  --output ${tmp}/reg 
-
-runit qit --verbose MaskTransform \
-  --input ${csf} \
-  --affine ${tmp}/reg/xfm.txt \
-  --reference ${root}/data/brain.nii.gz \
-  --output ${tmp}/seg/csf.mask.nii.gz
-
 runit qit --verbose MaskCentroids \
-  --input ${tmp}/seg/csf.mask.nii.gz \
+  --input ${csf} \
   --mask ${root}/data/middle.mask.nii.gz \
   --largest \
   --output ${tmp}/seg/centroid.txt

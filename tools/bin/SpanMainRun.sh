@@ -3,6 +3,7 @@
 #
 #  SPAN Rodent MRI Analytics 
 #
+##############################################################################
 
 usage()
 {
@@ -178,55 +179,114 @@ if [ ! -e native.harm ]; then
 
 fi
 
-if [ ! -e native.seg ]; then
+if [ ! -e native.reg ]; then
 
-  runit bash ${workflow}/SpanAuxSegmentLesion.sh \
-     --input native.harm \
-     --mask native.mask/brain.mask.nii.gz \
-     --output native.seg
-
-fi
-
-if [ ! -e native.midline ]; then
-
-	runit bash ${workflow}/SpanAuxMidlineShift.sh \
-    native.harm/t2_rate.nii.gz \
-    native.mask/brain.mask.nii.gz \
-    native.seg/csf.mask.nii.gz \
-    native.midline
-
-fi
-
-if [ ! -e native.map ]; then
-  tmp=native.map.tmp.${RANDOM}
+  tmp=native.reg.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-  cp native.midline/map.csv ${tmp}/midline.csv
+	echo "extracting registration target"
+	runit qit --verbose VolumeMask \
+		--input native.harm/t2_rate.nii.gz \
+		--mask native.mask/brain.mask.nii.gz \
+		--output ${tmp}/native.nii.gz
+
+	echo "performing registration"
+	runit qit --verbose VolumeRegisterLinearAnts \
+		--rigid \
+		--input native.reg/native.nii.gz \
+		--ref ${root}/data/brain.nii.gz \
+		--output ${tmp}/work
+
+	mv ${tmp}/work/* ${tmp}
+	rm -rf ${tmp}/work
+
+  mv ${tmp} native.reg
+
+fi
+
+if [ ! -e standard.harm ]; then
+
+  tmp=standard.harm.tmp.${RANDOM}
+  mkdir -p ${tmp}
+
+	for m in {t2,adc}_{base,rate} rare; do
+
+		runit qit --verbose VolumeTransform \
+			--input native.harm/${m}.nii.gz \
+			--affine native.reg/xfm.txt \
+			--reference ${root}/data/brain.nii.gz \
+			--output ${tmp}/${m}.nii.gz 
+
+	done
+
+  mv ${tmp} standard.harm
+
+fi
+
+
+if [ ! -e standard.mask]; then
+
+  tmp=standard.mask.tmp.${RANDOM}
+  mkdir -p ${tmp}
+
+	runit qit --verbose MaskTransform \
+		--input native.mask/brain.mask.nii.gz \
+		--affine native.reg/xfm.txt \
+		--reference ${root}/data/brain.nii.gz \
+		--output ${tmp}/brain.mask.nii.gz
+
+  mv ${tmp} standard.mask
+
+fi
+
+if [ ! -e standard.seg ]; then
+
+  runit bash ${workflow}/SpanAuxSegmentLesion.sh \
+     --input standard.harm \
+     --mask standard.mask/brain.mask.nii.gz \
+     --output standard.seg
+
+fi
+
+if [ ! -e standard.midline ]; then
+
+	runit bash ${workflow}/SpanAuxMidlineShift.sh \
+    standard.mask/brain.mask.nii.gz \
+    standard.seg/csf.mask.nii.gz \
+    standard.midline
+
+fi
+
+if [ ! -e standard.map ]; then
+  tmp=standard.map.tmp.${RANDOM}
+  mkdir -p ${tmp}
 
   for f in adc t2; do
     cp native.fit/${f}_report.csv ${tmp}/${f}_qa.csv
   done
 
+  cp standard.midline/map.csv ${tmp}/midline.csv
+
   runit qit --verbose MaskRegionsMeasure \
-    --regions native.seg/rois.nii.gz \
-    --lookup native.seg/rois.csv \
-    --volume adc_rate=native.fit/adc_rate.nii.gz \
-             t2_rate=native.fit/t2_rate.nii.gz \
-             adc_base=native.fit/adc_base.nii.gz \
-             t2_base=native.fit/t2_base.nii.gz \
-             adc_rate_harm=native.harm/adc_rate.nii.gz \
-             t2_rate_harm=native.harm/t2_rate.nii.gz \
-             adc_base_harm=native.harm/adc_base.nii.gz \
-             t2_base_harm=native.harm/t2_base.nii.gz \
-    --mask native.mask/brain.mask.nii.gz \
+    --regions standard.seg/rois.nii.gz \
+    --lookup standard.seg/rois.csv \
+    --volume adc_rate=standard.fit/adc_rate.nii.gz \
+             t2_rate=standard.fit/t2_rate.nii.gz \
+             adc_base=standard.fit/adc_base.nii.gz \
+             t2_base=standard.fit/t2_base.nii.gz \
+             adc_rate_harm=standard.harm/adc_rate.nii.gz \
+             t2_rate_harm=standard.harm/t2_rate.nii.gz \
+             adc_base_harm=standard.harm/adc_base.nii.gz \
+             t2_base_harm=standard.harm/t2_base.nii.gz \
+    --mask standard.mask/brain.mask.nii.gz \
     --output ${tmp}
 
   runit qit --verbose MaskMeasure \
-    --input native.seg/rois.nii.gz \
-    --lookup native.seg/rois.csv \
+    --input standard.seg/rois.nii.gz \
+    --lookup standard.seg/rois.csv \
     --output ${tmp}/volume.csv
 
-  mv ${tmp} native.map
+  mv ${tmp} standard.map
 fi
 
 function visit 
@@ -247,26 +307,26 @@ function visit
   rm ${4}/${2}_${3}.nii.gz
 }
 
-if [ ! -e native.vis ]; then
+if [ ! -e standard.vis ]; then
 
-  tmp=native.vis.tmp.${RANDOM}
+  tmp=standard.vis.tmp.${RANDOM}
   mkdir -p ${tmp}
 
   runit qit --verbose MaskShell \
     --mode Multi \
-    --input native.seg/rois.nii.gz \
+    --input standard.seg/rois.nii.gz \
     --output ${tmp}/rois.nii.gz
 
   runit qit --verbose MaskShell \
-    --input native.seg/lesion.mask.nii.gz \
+    --input standard.seg/lesion.mask.nii.gz \
     --output ${tmp}/lesion.nii.gz
 
   runit qit --verbose MaskShell \
-    --input native.seg/csf.mask.nii.gz \
+    --input standard.seg/csf.mask.nii.gz \
     --output ${tmp}/csf.nii.gz
 
   runit qit --verbose MaskShell \
-    --input native.mask/brain.mask.nii.gz \
+    --input standard.mask/brain.mask.nii.gz \
     --output ${tmp}/brain.nii.gz
 
   runit qit --verbose MaskSet --clear \
@@ -275,12 +335,12 @@ if [ ! -e native.vis ]; then
 
   for labels in anatomy brain lesion csf rois; do 
     for param in rare {adc,t2}_{rate,base}; do
-      visit native.harm/${param}.nii.gz ${param} ${labels} ${tmp}
+      visit standard.harm/${param}.nii.gz ${param} ${labels} ${tmp}
     done
   done
 
   rm ${tmp}/*.nii.gz
-  mv ${tmp} native.vis
+  mv ${tmp} standard.vis
 
 fi
 
