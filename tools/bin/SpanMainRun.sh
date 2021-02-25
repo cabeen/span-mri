@@ -43,6 +43,7 @@ function runit
   fi
 }
 
+data="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../data && pwd)"
 workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
 
@@ -193,8 +194,8 @@ if [ ! -e native.reg ]; then
 	echo "performing registration"
 	runit qit --verbose VolumeRegisterLinearAnts \
 		--rigid \
-		--input native.reg/native.nii.gz \
-		--ref ${root}/data/brain.nii.gz \
+		--input ${tmp}/native.nii.gz \
+		--ref ${data}/brain.nii.gz \
 		--output ${tmp}/work
 
 	mv ${tmp}/work/* ${tmp}
@@ -204,27 +205,29 @@ if [ ! -e native.reg ]; then
 
 fi
 
-if [ ! -e standard.harm ]; then
+for p in fit harm; do
 
-  tmp=standard.harm.tmp.${RANDOM}
-  mkdir -p ${tmp}
+	if [ ! -e standard.${p} ]; then
 
-	for m in {t2,adc}_{base,rate} rare; do
+		tmp=standard.${p}.tmp.${RANDOM}
+		mkdir -p ${tmp}
 
-		runit qit --verbose VolumeTransform \
-			--input native.harm/${m}.nii.gz \
-			--affine native.reg/xfm.txt \
-			--reference ${root}/data/brain.nii.gz \
-			--output ${tmp}/${m}.nii.gz 
+		for m in {t2,adc}_{base,rate} rare; do
 
-	done
+			runit qit --verbose VolumeTransform \
+				--input native.${p}/${m}.nii.gz \
+				--affine native.reg/xfm.txt \
+				--reference ${data}/brain.nii.gz \
+				--output ${tmp}/${m}.nii.gz 
 
-  mv ${tmp} standard.harm
+		done
 
-fi
+		mv ${tmp} standard.${p}
 
+	fi
+done
 
-if [ ! -e standard.mask]; then
+if [ ! -e standard.mask ]; then
 
   tmp=standard.mask.tmp.${RANDOM}
   mkdir -p ${tmp}
@@ -232,7 +235,11 @@ if [ ! -e standard.mask]; then
 	runit qit --verbose MaskTransform \
 		--input native.mask/brain.mask.nii.gz \
 		--affine native.reg/xfm.txt \
-		--reference ${root}/data/brain.nii.gz \
+		--reference ${data}/brain.nii.gz \
+		--output ${tmp}/raw.mask.nii.gz
+
+	runit qit --verbose MaskFilterMode \
+		--input ${tmp}/raw.mask.nii.gz \
 		--output ${tmp}/brain.mask.nii.gz
 
   mv ${tmp} standard.mask

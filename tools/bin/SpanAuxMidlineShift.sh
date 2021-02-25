@@ -48,9 +48,9 @@ runit qit --verbose MaskCentroids \
   --input ${csf} \
   --mask ${root}/data/middle.mask.nii.gz \
   --largest \
-  --output ${tmp}/seg/centroid.txt
+  --output ${tmp}/centroid.txt
 
-if [ $(wc -l ${tmp}/seg/centroid.txt | awk '{print $1}') == "0" ]; then 
+if [ $(wc -l ${tmp}/centroid.txt | awk '{print $1}') == "0" ]; then 
 
   echo name,value > ${tmp}/map.csv
 	echo shift_mm,NA >> ${tmp}/map.csv
@@ -60,9 +60,9 @@ if [ $(wc -l ${tmp}/seg/centroid.txt | awk '{print $1}') == "0" ]; then
 
 else
 
-	x=$(cat ${tmp}/seg/centroid.txt | awk '{print $1}')
-	y=$(cat ${tmp}/seg/centroid.txt | awk '{print $2}')
-	z=$(cat ${tmp}/seg/centroid.txt | awk '{print $3}')
+	x=$(cat ${tmp}/centroid.txt | awk '{print $1}')
+	y=$(cat ${tmp}/centroid.txt | awk '{print $2}')
+	z=$(cat ${tmp}/centroid.txt | awk '{print $3}')
 
 	mxc=7.42662
 	mxl=2.49401
@@ -71,35 +71,24 @@ else
 	mzs=11.0
 	mzi=5.2
 
-	echo ${x} ${y} ${mzc}    > ${tmp}/seg/atlas.landmarks.txt
-	echo ${mxc} ${y} ${mzc} >> ${tmp}/seg/atlas.landmarks.txt
-	echo ${mxl} ${y} ${mzc} >> ${tmp}/seg/atlas.landmarks.txt
-	echo ${mxr} ${y} ${mzc} >> ${tmp}/seg/atlas.landmarks.txt
-	echo ${mxc} ${y} ${mzs} >> ${tmp}/seg/atlas.landmarks.txt
-	echo ${mxc} ${y} ${mzi} >> ${tmp}/seg/atlas.landmarks.txt
+	echo ${x} ${y} ${mzc}    > ${tmp}/landmarks.txt
+	echo ${mxc} ${y} ${mzc} >> ${tmp}/landmarks.txt
+	echo ${mxl} ${y} ${mzc} >> ${tmp}/landmarks.txt
+	echo ${mxr} ${y} ${mzc} >> ${tmp}/landmarks.txt
+	echo ${mxc} ${y} ${mzs} >> ${tmp}/landmarks.txt
+	echo ${mxc} ${y} ${mzi} >> ${tmp}/landmarks.txt
 
 	runit qit --verbose VectsDistances \
-		--input ${tmp}/seg/atlas.landmarks.txt \
-		--output ${tmp}/seg/atlas.distances.txt
+		--input ${tmp}/landmarks.txt \
+		--output ${tmp}/distances.txt
 
-	runit qit --verbose VectsTransform \
-		--affine ${tmp}/reg/xfm.txt \
-		--input ${tmp}/seg/atlas.landmarks.txt \
-		--output ${tmp}/seg/native.landmarks.txt
-
-	runit qit --verbose VectsDistances \
-		--input ${tmp}/seg/native.landmarks.txt \
-		--output ${tmp}/seg/native.distances.txt
-
-	dc=$(cat ${tmp}/seg/native.distances.txt | awk 'NR == 1 {print $2}')
-	ds=$(cat ${tmp}/seg/native.distances.txt | awk 'NR == 3 {print $4}')
+	dc=$(cat ${tmp}/distances.txt | awk 'NR == 1 {print $2}')
+	ds=$(cat ${tmp}/distances.txt | awk 'NR == 3 {print $4}')
 	dr=$(python -c "print(200.0 * ${dc} / ${ds})")
 
 	echo name,value > ${tmp}/map.csv
 	echo shift_mm,${dc} >> ${tmp}/map.csv
 	echo shift_percent,${dr} >> ${tmp}/map.csv
-
-	cp ${tmp}/seg/native.landmarks.txt ${tmp}/landmarks.txt
 
 fi
 
