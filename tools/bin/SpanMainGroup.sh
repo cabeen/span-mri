@@ -99,7 +99,7 @@ cat ${output}/table.wide.csv | sed 's/volume_volume/volume/g' > ${output}/tmp \
 
 qit TableSelect \
   --input ${output}/table.wide.csv \
-  --retain subject,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,shift_mm,shift_percent,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr \
+  --retain subject,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,midline_shift_mm,midline_shift_percent,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr \
   --output ${output}/table.wide.csv
 
 qit TableSelect \
