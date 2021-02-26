@@ -114,7 +114,7 @@ python ${mybin}/SpanAuxSummarize.py \
 echo "  making vis" 
 for sdir in ${input}/*/*; do
   echo "  ... ${sdir}"
-  if [ -e ${sdir}/native.vis ]; then
+  if [ -e ${sdir}/standard.vis ]; then
 		sid=$(basename ${sdir})
 		tp=$(basename $(dirname ${sdir}))
 		site=$(cat ${sdir}/native.import/site.txt)
@@ -122,7 +122,7 @@ for sdir in ${input}/*/*; do
 
 		for contrast in rare {adc,t2}_{rate,base}; do
 		  for vis in anatomy brain lesion csf rois; do
-		    infn=${input}/${tp}/${sid}/native.vis/${contrast}_${vis}.png
+		    infn=${input}/${tp}/${sid}/standard.vis/${contrast}_${vis}.png
 		    if [ -e ${infn} ]; then
 		       ln ${infn} ${output}/vis/${site}_${sid}_${tp}_${contrast}_${vis}.png
 		    fi

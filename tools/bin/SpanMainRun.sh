@@ -307,7 +307,7 @@ function visit
     --output ${4}/${2}_${3}.nii.gz
 
   runit qit --verbose VolumeMosaic \
-    --crop :,16:2:end,: \
+    --crop :,start:2:end,: \
     --rgb --axis j \
     --input ${4}/${2}_${3}.nii.gz \
     --output ${4}/${2}_${3}.png
