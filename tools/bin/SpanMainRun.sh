@@ -257,7 +257,7 @@ fi
 
 if [ ! -e standard.midline ]; then
 
-	runit bash ${workflow}/SpanAuxMidlineShift.sh \
+	runit qit --verbose ${workflow}/SpanAuxMidline.py \
     standard.mask/brain.mask.nii.gz \
     standard.seg/csf.mask.nii.gz \
     standard.midline
@@ -307,7 +307,7 @@ function visit
     --output ${4}/${2}_${3}.nii.gz
 
   runit qit --verbose VolumeMosaic \
-    --crop :,start:2:end,: \
+    --crop :,16:2:end,: \
     --rgb --axis j \
     --input ${4}/${2}_${3}.nii.gz \
     --output ${4}/${2}_${3}.png
