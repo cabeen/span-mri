@@ -12,10 +12,10 @@
 mybin=$(cd $(dirname ${0}); pwd -P)
 name=$(basename $0)
 
-if [ ! -e level1 ]; then echo "level1 not found!"; exit; fi
+if [ ! -e process ]; then echo "process directory not found!"; exit; fi
 
-input=level1
-output=level2
+input=process
+output=group
 
 function runit 
 {
@@ -39,7 +39,7 @@ rm -rf ${output}/sids.txt
 
 echo "  ... collecting subject list" 
 for sdir in ${input}/*/*; do
-  if [ -e ${sdir}/native.vis ]; then
+  if [ -e ${sdir}/standard.vis ]; then
 		sid=$(basename ${sdir})
 		echo ${sid} 
   fi
@@ -51,7 +51,7 @@ cat ${output}/sids.txt | sort | uniq > ${output}/tmp \
 echo "  ... collecting scan data" 
 echo "subject,site,date,timepoint,uid" > ${output}/tables/meta.csv
 for sdir in ${input}/*/*; do
-  if [ -e ${sdir}/native.vis ]; then
+  if [ -e ${sdir}/standard.vis ]; then
 		sid=$(basename ${sdir})
 		tp=$(basename $(dirname ${sdir}))
 		site=$(cat ${sdir}/native.import/site.txt)
@@ -64,7 +64,7 @@ done >> ${output}/tables/meta.csv
 
 echo "  ... grouping tables" 
 qit --verbose MapCat \
-  --pattern ${input}/%{timepoint}/%{subject}/native.map/%{metric}.csv \
+  --pattern ${input}/%{timepoint}/%{subject}/standard.map/%{metric}.csv \
   --vars timepoint=early,late subject=${output}/sids.txt metric=midline,adc_qa,adc_base_mean,adc_base_harm_mean,adc_rate_mean,adc_rate_harm_mean,adc_rate_std,adc_rate_harm_std,t2_base_mean,t2_base_harm_mean,t2_rate_mean,t2_rate_harm_mean,t2_rate_std,t2_rate_harm_std,t2_qa,conf_mean,volume \
   --skip \
   --output ${output}/tables/metrics.csv
@@ -99,7 +99,7 @@ cat ${output}/table.wide.csv | sed 's/volume_volume/volume/g' > ${output}/tmp \
 
 qit TableSelect \
   --input ${output}/table.wide.csv \
-  --retain subject,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr \
+  --retain subject,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,midline_shift_mm,midline_shift_percent,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr \
   --output ${output}/table.wide.csv
 
 qit TableSelect \
@@ -114,7 +114,7 @@ python ${mybin}/SpanAuxSummarize.py \
 echo "  making vis" 
 for sdir in ${input}/*/*; do
   echo "  ... ${sdir}"
-  if [ -e ${sdir}/native.vis ]; then
+  if [ -e ${sdir}/standard.vis ]; then
 		sid=$(basename ${sdir})
 		tp=$(basename $(dirname ${sdir}))
 		site=$(cat ${sdir}/native.import/site.txt)
@@ -122,7 +122,7 @@ for sdir in ${input}/*/*; do
 
 		for contrast in rare {adc,t2}_{rate,base}; do
 		  for vis in anatomy brain lesion csf rois; do
-		    infn=${input}/${tp}/${sid}/native.vis/${contrast}_${vis}.png
+		    infn=${input}/${tp}/${sid}/standard.vis/${contrast}_${vis}.png
 		    if [ -e ${infn} ]; then
 		       ln ${infn} ${output}/vis/${site}_${sid}_${tp}_${contrast}_${vis}.png
 		    fi
