@@ -240,6 +240,11 @@ if [ ! -e standard.mask ]; then
 
 	runit qit --verbose MaskFilterMode \
 		--input ${tmp}/raw.mask.nii.gz \
+		--output ${tmp}/filter.mask.nii.gz
+
+	runit qit --verbose MaskIntersection \
+		--left ${tmp}/filter.mask.nii.gz \
+		--right ${data}/restrict.mask.nii.gz \
 		--output ${tmp}/brain.mask.nii.gz
 
   mv ${tmp} standard.mask
