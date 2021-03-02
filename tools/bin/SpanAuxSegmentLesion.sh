@@ -153,11 +153,6 @@ runit qit --verbose VolumeThreshold \
 	--threshold ${sigmoidLowThreshLesion} \
 	--output ${tmp}/lesion.mask.nii.gz
 
-# runit qit --verbose MaskDilate \
-# 	--input ${tmp}/lesion.low.mask.nii.gz \
-# 	--num ${numDilateLesion} \
-# 	--output ${tmp}/lesion.mask.nii.gz
-
 echo "segmenting csf"
 
 runit qit --verbose VolumeFilterSigmoid \

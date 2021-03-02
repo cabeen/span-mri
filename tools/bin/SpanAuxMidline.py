@@ -66,6 +66,7 @@ def main():
         f = open(join(tmp_dn, "map.csv"), 'w')
         f.write("name,value\n")
         f.write("shift_mm,NA\n")
+        f.write("shift_lat,NA\n")
         f.write("shift_width,NA\n")
         f.write("shift_percent,NA\n")
         f.write("shift_left,NA\n")
@@ -109,6 +110,7 @@ def main():
         for v in [shift, center, left, right, superior, inferior, anterior, posterior]:
             landmarks.add(v)
 
+        shift_lat = shift.getX() - center.getX()
         shift_mm = shift.dist(center)
         shift_width = left.dist(right)
         shift_percent = 200 * shift_mm / shift_width
@@ -121,6 +123,7 @@ def main():
         f = open(join(tmp_dn, "map.csv"), 'w')
         f.write("name,value\n")
         f.write("shift_mm,%g\n" % shift_mm)
+        f.write("shift_lat,%g\n" % shift_lat)
         f.write("shift_width,%g\n" % shift_width)
         f.write("shift_percent,%g\n" % shift_percent)
         f.write("shift_left,%g\n" % shift_left)
