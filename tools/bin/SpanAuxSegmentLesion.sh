@@ -151,12 +151,12 @@ runit qit --verbose VolumeThreshold \
 	--input ${tmp}/lesion.medprob.nii.gz \
 	--mask ${tmp}/lesion.dil.mask.nii.gz \
 	--threshold ${sigmoidLowThreshLesion} \
-	--output ${tmp}/lesion.low.mask.nii.gz
-
-runit qit --verbose MaskDilate \
-	--input ${tmp}/lesion.low.mask.nii.gz \
-	--num ${numDilateLesion} \
 	--output ${tmp}/lesion.mask.nii.gz
+
+# runit qit --verbose MaskDilate \
+# 	--input ${tmp}/lesion.low.mask.nii.gz \
+# 	--num ${numDilateLesion} \
+# 	--output ${tmp}/lesion.mask.nii.gz
 
 echo "segmenting csf"
 
