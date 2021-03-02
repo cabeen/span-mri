@@ -1,0 +1,9 @@
+TODO:
+* look into Iowa smaller total brain volume
+* we can request a phantom to be scanner
+* Fahmeed points out that gradient issues can systematically affect volume
+* create per-site volumetric maps of lesion location and image contrast
+* falcon tubes are phantoms we can use
+* add negative shifts to pipeline
+* send total brain volume plots
+* check outliers
