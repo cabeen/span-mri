@@ -1,0 +1,6 @@
+To exclude:
+
+90,91,99,104,103,29,12,110,20,30,34,1007,1009,107
+
+add extra voxels to account for brain shift and swelling
+
