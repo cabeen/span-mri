@@ -17,7 +17,7 @@ Description:
     
 Usage: 
 
-  $(basename $0) [--source <dicom_dir>] [--correct <correct_dir>] subject_dir
+  $(basename $0) [--source <dicom_dir>] [--correct <correct_dir>] --subject subject_dir
 
 Author: Ryan Cabeen
 "
@@ -49,21 +49,22 @@ name=$(basename $0)
 
 source=""
 correct=""
+subject=""
 posit=""
 
 while [ "$1" != "" ]; do
     case $1 in
         --source)                  shift; source=$1 ;;
         --correct)                 shift; correct=$1 ;;
+        --subject)                 shift; subject=$1 ;;
         --help )                   usage ;;
         * )                        posit="${posit} $1" ;;
     esac
     shift
 done
 
-if [ $(echo ${posit} | wc -w)  -ne 1 ]; then usage; fi
-
-subject=${posit}
+if [ $(echo ${posit} | wc -w) -ne 0 ]; then echo "unexpected positional arguments: ${posit}"; usage; fi
+if [ ""${subject} == "" ]; then echo "no subject provided"; usage; fi
 
 ##############################################################################
 # Processing 

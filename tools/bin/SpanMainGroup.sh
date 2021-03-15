@@ -12,9 +12,9 @@
 mybin=$(cd $(dirname ${0}); pwd -P)
 name=$(basename $0)
 
-if [ ! -e process ]; then echo "process directory not found!"; exit; fi
+if [ ! -e cases/process ]; then echo "process directory not found!"; exit; fi
 
-input=process
+input=cases/process
 output=group
 
 function runit 
