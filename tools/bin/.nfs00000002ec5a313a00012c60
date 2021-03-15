@@ -83,13 +83,6 @@ if [ ""${source} != "" ]; then
   fi
 fi
 
-flips=""
-for c in flipi flipj flipk; do
-  if [ -e ${correct}/${c} ]; then
-    flips="${flips} ${c}"
-  fi
-done
-
 cd ${subject}
 echo "  using subject: ${PWD}"
 check native.dicom
@@ -107,17 +100,24 @@ if [ -e native.convert ] && [ ! -e native.import ]; then
   tmp=native.import.tmp.${RANDOM}
   runit bash ${workflow}/SpanAuxImport.sh native.convert ${tmp}
 
-  for c in ${flips}; do
-    for v in adc rare t2; do
-      echo "  correcting ${v} with ${c}"
-      runit mv ${tmp}/${v}.nii.gz ${tmp}/${v}.raw.nii.gz
-      runit qit --verbose VolumeReorder \
-        --${c} \
-        --input ${tmp}/${v}.raw.nii.gz \
-        --output ${tmp}/${v}.nii.gz
+  if [ ""${correct} != "" ]; then
+    for c in flipi flipj flipk; do
+      if [ -e ${correct}/${c} ]; then
+				for v in adc rare t2; do
+					echo "  correcting ${v} with ${c}"
+					runit mv ${tmp}/${v}.nii.gz ${tmp}/${v}.raw.nii.gz
+					runit qit --verbose VolumeReorder \
+						--${c} \
+						--input ${tmp}/${v}.raw.nii.gz \
+						--output ${tmp}/${v}.nii.gz
+				done
+      fi
     done
-  done
+  else
+    echo "  no corrections needed"
+  fi
  
+
   mv ${tmp} native.import
 
 fi
