@@ -53,7 +53,7 @@ posit=""
 
 while [ "$1" != "" ]; do
     case $1 in
-        --source)                   shift; source=$1 ;;
+        --source)                  shift; source=$1 ;;
         --correct)                 shift; correct=$1 ;;
         --help )                   usage ;;
         * )                        posit="${posit} $1" ;;
@@ -113,7 +113,10 @@ if [ -e native.convert ] && [ ! -e native.import ]; then
 				done
       fi
     done
+  else
+    echo "  no corrections needed"
   fi
+ 
 
   mv ${tmp} native.import
 
