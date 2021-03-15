@@ -58,6 +58,8 @@ adcRateThreshCsf=1.65
 sigmoidThreshCsf=0.5
 
 input=""
+mask=""
+prior=""
 output=""
 posit=""
 
@@ -65,6 +67,7 @@ while [ "$1" != "" ]; do
     case $1 in
         --input)                   shift; input=$1 ;;
         --mask)                    shift; mask=$1 ;;
+        --prior)                   shift; prior=$1 ;;
         --output)                  shift; output=$1 ;;
         --t2RateThreshLesion)      shift; t2RateThreshLesion=$1 ;;
         --adcRateThreshLesion)     shift; adcRateThreshLesion=$1 ;;
@@ -151,7 +154,16 @@ runit qit --verbose VolumeThreshold \
 	--input ${tmp}/lesion.medprob.nii.gz \
 	--mask ${tmp}/lesion.dil.mask.nii.gz \
 	--threshold ${sigmoidLowThreshLesion} \
-	--output ${tmp}/lesion.mask.nii.gz
+	--output ${tmp}/lesion.penult.mask.nii.gz
+
+if [ "${prior}" != "" ]; then 
+	runit qit --verbose MaskIntersection \
+	  --left ${tmp}/lesion.penult.mask.nii.gz \
+		--right ${prior} \
+		--output ${tmp}/lesion.mask.nii.gz
+else
+  cp ${tmp}/lesion.penult.mask.nii.gz ${tmp}/lesion.mask.nii.gz
+fi
 
 echo "segmenting csf"
 
