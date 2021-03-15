@@ -277,6 +277,7 @@ if [ ! -e standard.seg ]; then
   runit bash ${workflow}/SpanAuxSegmentLesion.sh \
      --input standard.harm \
      --mask standard.mask/brain.mask.nii.gz \
+     --prior ${data}/lesion.mask.nii.gz \
      --output standard.seg
 
 fi
