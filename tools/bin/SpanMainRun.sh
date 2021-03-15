@@ -17,7 +17,7 @@ Description:
     
 Usage: 
 
-  $(basename $0) [input_dicom_dir] subject_dir
+  $(basename $0) [--source <dicom_dir>] [--correct <correct_dir>] subject_dir
 
 Author: Ryan Cabeen
 "
@@ -28,7 +28,7 @@ exit 1
 function check
 {
   if [ ! -e $1 ]; then 
-    "[error] required input not found: $1"
+    "[error] required data not found: $1"
     exit 1
   fi
 }
@@ -47,12 +47,14 @@ data="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../data && pwd)"
 workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
 
-input=""
+source=""
+correct=""
 posit=""
 
 while [ "$1" != "" ]; do
     case $1 in
-        --input)                   shift; input=$1 ;;
+        --source)                   shift; source=$1 ;;
+        --correct)                 shift; correct=$1 ;;
         --help )                   usage ;;
         * )                        posit="${posit} $1" ;;
     esac
@@ -69,12 +71,12 @@ subject=${posit}
 
 echo "started ${name}"
 
-if [ ""${input} != "" ]; then
+if [ ""${source} != "" ]; then
   if [ ! -e ${subject}/native.dicom ]; then
-    echo "  using dicom: ${input}"
+    echo "  using source: ${source}"
     mkdir -p ${subject}
 	  tmp=${subject}/native.dicom.tmp.${RANDOM}
-    cp -r ${input} ${tmp}
+    cp -r ${source} ${tmp}
     chmod -R u+w ${tmp}
 	  runit bash ${workflow}/SpanAuxDicomFix.sh ${tmp}
     mv ${tmp} ${subject}/native.dicom
@@ -97,6 +99,22 @@ if [ -e native.convert ] && [ ! -e native.import ]; then
 
   tmp=native.import.tmp.${RANDOM}
   runit bash ${workflow}/SpanAuxImport.sh native.convert ${tmp}
+
+  if [ ""${correct} != "" ]; then
+    for c in flipi flipj flipk; do
+      if [ -e ${correct}/${c} ]; then
+				for v in adc rare t2; do
+					echo "  correcting ${v} with ${c}"
+					runit mv ${tmp}/${v}.nii.gz ${tmp}/${v}.raw.nii.gz
+					runit qit --verbose VolumeReorder \
+						--${c} \
+						--input ${tmp}/${v}.raw.nii.gz \
+						--output ${tmp}/${v}.nii.gz
+				done
+      fi
+    done
+  fi
+
   mv ${tmp} native.import
 
 fi
