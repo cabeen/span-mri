@@ -30,21 +30,36 @@ rm -rf group/fuse/lists/*
 
 for d in process/*/*; do \
   if [ -e ${d}/standard.vis ]; then 
-    echo ${d} >> group/fuse/lists/$(cat ${d}/native.import/site.txt)_$(cat ${d}/native.import/timepoint.txt).txt; 
+    tp=$(cat ${d}/native.import/timepoint)
+    echo ${d} >> group/fuse/lists/${site}_${tp}.txt
   fi 
 done
 
-for s in {AG,JH,MG,UI,UT,YL}_{ERLY,LATE}; do 
-  for p in rare {t2,adc}_{rate,base}; do 
-    echo qit -Xmx12G --verbose VolumeFuse --input %s/standard.harm/${p}.nii.gz --pattern group/subsets/${s}.txt --skip --output-mean group/fuse/${s}.${p}.mean.nii.gz --output-std group/fuse/${s}.${p}.std.nii.gz; 
+for p in rare {t2,adc}_{rate,base}; do 
+  for s in {AG,JH,MG,UI,UT,YL}_{ERLY,LATE}; do 
+    if [ ! -e group/fuse/${s}.${p}.mean.nii.gz ]; then
+      qsubcmd --qbigmem qit -Xmx12G --verbose VolumeFuse \
+        --input %s/standard.harm/${p}.nii.gz \
+        --pattern group/fuse/lists/${s}.txt \
+        --skip \
+        --output-mean group/fuse/${s}.${p}.mean.nii.gz \
+        --output-std group/fuse/${s}.${p}.std.nii.gz
+    fi
   done 
-done | parallel -j 10
+done 
 
-for s in {AG,JH,MG,UI,UT,YL}_{ERLY,LATE}; do 
-  for p in lesion csf; do
-    echo qit -Xmx12G --verbose VolumeFuse --input %s/standard.seg/${p}.mask.nii.gz --pattern group/subsets/${s}.txt --skip --output-mean group/fuse/${s}.${p}.mean.nii.gz --output-std group/fuse/${s}.${p}.std.nii.gz; 
+for p in lesion csf; do
+  for s in {AG,JH,MG,UI,UT,YL}_{ERLY,LATE}; do 
+    if [ ! -e group/fuse/${s}.${p}.mean.nii.gz ]; then
+      qsubcmd --qbigmem qit -Xmx12G --verbose VolumeFuse \
+        --input %s/standard.seg/${p}.mask.nii.gz \
+        --pattern group/fuse/lists/${s}.txt \
+        --skip \
+        --output-mean group/fuse/${s}.${p}.mean.nii.gz \
+        --output-std group/fuse/${s}.${p}.std.nii.gz
+    fi
   done 
-done | parallel -j 10
+done
 
 echo "finished"
 
