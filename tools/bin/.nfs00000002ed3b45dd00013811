@@ -46,7 +46,6 @@ function runit
 data="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../data && pwd)"
 workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
-qitcmd="qit --verbose --debug"
 
 source=""
 correct=""
@@ -85,12 +84,25 @@ if [ ""${source} != "" ]; then
   fi
 fi
 
+params=""
 flips=""
-for c in flipi flipj flipk; do
-  if [ -e ${correct}/${c} ]; then
-    flips="${flips} ${c}"
-  fi
-done
+
+if [ ""${correct} != "" ]; then
+
+  correct="$(cd "${correct}" && pwd)"
+
+  for p in adc.txt t2.txt; do
+    if [ -e ${correct}/${p} ]; then
+      params="${params} ${p}"
+    fi
+  done
+
+  for c in flipi flipj flipk; do
+    if [ -e ${correct}/${c} ]; then
+      flips="${flips} ${c}"
+    fi
+  done
+fi
 
 cd ${subject}
 echo "  using subject: ${PWD}"
@@ -113,13 +125,18 @@ if [ -e native.convert ] && [ ! -e native.import ]; then
     for v in adc rare t2; do
       echo "  correcting ${v} with ${c}"
       runit mv ${tmp}/${v}.nii.gz ${tmp}/${v}.raw.nii.gz
-      runit ${qitcmd} VolumeReorder \
+      runit qit --verbose VolumeReorder \
         --${c} \
         --input ${tmp}/${v}.raw.nii.gz \
         --output ${tmp}/${v}.nii.gz
     done
   done
  
+  for p in ${params}; do
+    echo "  correcting ${p}"
+    runit cp ${correct}/${p} ${tmp}/${p}
+  done
+
   mv ${tmp} native.import
 
 fi
@@ -147,14 +164,14 @@ if [ ! -e native.fit ]; then
   mkdir -p ${tmp}
 
   for m in adc t2; do
-		runit ${qitcmd} VolumeExpDecayFit \
+		runit qit --verbose VolumeExpDecayFit \
 			--input       native.denoise/${m}.nii.gz \
 			--varying     native.denoise/${m}.txt \
 			--outputAlpha ${tmp}/${m}_base.nii.gz \
 			--outputBeta  ${tmp}/${m}_rate.nii.gz \
 			--outputError ${tmp}/${m}_rmse.nii.gz \
 			--outputSnr   ${tmp}/${m}_snr.nii.gz
-		runit ${qitcmd} VolumeReduce \
+		runit qit --verbose VolumeReduce \
       --method Mean \
 			--input  native.denoise/${m}.nii.gz \
 			--output ${tmp}/${m}_mean.nii.gz
@@ -164,7 +181,7 @@ if [ ! -e native.fit ]; then
 				-w ${tmp}/${m}_${p}.nii.gz \
 				-o ${tmp}/${m}_${p}.nii.gz
 		done
-		runit ${qitcmd} VolumeSegmentForeground \
+		runit qit --verbose VolumeSegmentForeground \
 			--input  native.denoise/${m}.nii.gz \
 			--output ${tmp}/${m}_mask.nii.gz \
 			--report ${tmp}/${m}_report.csv
@@ -177,13 +194,9 @@ fi
 
 if [ ! -e native.mask/brain.mask.nii.gz ]; then
 
-  tmp=native.mask.tmp.${RANDOM}
-  mkdir -p ${tmp}
-
+  mkdir -p native.mask
   runit bash ${workflow}/SpanAuxSegmentBrainLearn.sh \
-    native.fit ${tmp}/brain.mask.nii.gz
-
-  mv ${tmp} native.mask
+    native.fit native.mask/brain.mask.nii.gz
 
 fi
 
@@ -193,7 +206,7 @@ if [ ! -e native.harm ]; then
   mkdir -p ${tmp}
 
   for p in {adc,t2}_{base,rate} rare; do
-    runit ${qitcmd} VolumeHarmonize \
+    runit qit --verbose VolumeHarmonize \
       --input native.fit/${p}.nii.gz \
       --inputStatMask native.mask/brain.mask.nii.gz \
       --output ${tmp}/${p}.nii.gz
@@ -209,13 +222,13 @@ if [ ! -e native.reg ]; then
   mkdir -p ${tmp}
 
 	echo "extracting registration target"
-	runit ${qitcmd} VolumeMask \
+	runit qit --verbose VolumeMask \
 		--input native.harm/t2_rate.nii.gz \
 		--mask native.mask/brain.mask.nii.gz \
 		--output ${tmp}/native.nii.gz
 
 	echo "performing registration"
-	runit ${qitcmd} VolumeRegisterLinearAnts \
+	runit qit --verbose VolumeRegisterLinearAnts \
 		--rigid \
 		--input ${tmp}/native.nii.gz \
 		--ref ${data}/brain.nii.gz \
@@ -237,7 +250,7 @@ for p in fit harm; do
 
 		for m in {t2,adc}_{base,rate} rare; do
 
-			runit ${qitcmd} VolumeTransform \
+			runit qit --verbose VolumeTransform \
 				--input native.${p}/${m}.nii.gz \
 				--affine native.reg/xfm.txt \
 				--reference ${data}/brain.nii.gz \
@@ -255,17 +268,17 @@ if [ ! -e standard.mask ]; then
   tmp=standard.mask.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-	runit ${qitcmd} MaskTransform \
+	runit qit --verbose MaskTransform \
 		--input native.mask/brain.mask.nii.gz \
 		--affine native.reg/xfm.txt \
 		--reference ${data}/brain.nii.gz \
 		--output ${tmp}/raw.mask.nii.gz
 
-	runit ${qitcmd} MaskFilterMode \
+	runit qit --verbose MaskFilterMode \
 		--input ${tmp}/raw.mask.nii.gz \
 		--output ${tmp}/filter.mask.nii.gz
 
-	runit ${qitcmd} MaskIntersection \
+	runit qit --verbose MaskIntersection \
 		--left ${tmp}/filter.mask.nii.gz \
 		--right ${data}/restrict.mask.nii.gz \
 		--output ${tmp}/brain.mask.nii.gz
@@ -286,9 +299,8 @@ fi
 
 if [ ! -e standard.midline ]; then
 
-	runit ${qitcmd} ${workflow}/SpanAuxMidline.py \
+	runit qit --verbose ${workflow}/SpanAuxMidline.py \
     standard.mask/brain.mask.nii.gz \
-    standard.seg/tissue.mask.nii.gz \
     standard.seg/csf.mask.nii.gz \
     standard.midline
 
@@ -304,7 +316,7 @@ if [ ! -e standard.map ]; then
 
   cp standard.midline/map.csv ${tmp}/midline.csv
 
-  runit ${qitcmd} MaskRegionsMeasure \
+  runit qit --verbose MaskRegionsMeasure \
     --regions standard.seg/rois.nii.gz \
     --lookup standard.seg/rois.csv \
     --volume adc_rate=standard.fit/adc_rate.nii.gz \
@@ -318,7 +330,7 @@ if [ ! -e standard.map ]; then
     --mask standard.mask/brain.mask.nii.gz \
     --output ${tmp}
 
-  runit ${qitcmd} MaskMeasure \
+  runit qit --verbose MaskMeasure \
     --input standard.seg/rois.nii.gz \
     --lookup standard.seg/rois.csv \
     --output ${tmp}/volume.csv
@@ -328,7 +340,7 @@ fi
 
 function visit 
 {
-  runit ${qitcmd} VolumeRender \
+  runit qit --verbose VolumeRender \
     --bghigh 3.0 \
     --alpha 1.0 \
     --discrete pastel \
@@ -336,7 +348,7 @@ function visit
     --labels ${4}/${3}.nii.gz \
     --output ${4}/${2}_${3}.nii.gz
 
-  runit ${qitcmd} VolumeMosaic \
+  runit qit --verbose VolumeMosaic \
     --crop :,start:2:end,: \
     --rgb --axis j \
     --input ${4}/${2}_${3}.nii.gz \
@@ -349,24 +361,24 @@ if [ ! -e standard.vis ]; then
   tmp=standard.vis.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-  runit ${qitcmd} MaskShell \
+  runit qit --verbose MaskShell \
     --mode Multi \
     --input standard.seg/rois.nii.gz \
     --output ${tmp}/rois.nii.gz
 
-  runit ${qitcmd} MaskShell \
+  runit qit --verbose MaskShell \
     --input standard.seg/lesion.mask.nii.gz \
     --output ${tmp}/lesion.nii.gz
 
-  runit ${qitcmd} MaskShell \
+  runit qit --verbose MaskShell \
     --input standard.seg/csf.mask.nii.gz \
     --output ${tmp}/csf.nii.gz
 
-  runit ${qitcmd} MaskShell \
+  runit qit --verbose MaskShell \
     --input standard.mask/brain.mask.nii.gz \
     --output ${tmp}/brain.nii.gz
 
-  runit ${qitcmd} MaskSet --clear \
+  runit qit --verbose MaskSet --clear \
     --input ${tmp}/brain.nii.gz \
     --output ${tmp}/anatomy.nii.gz
 
