@@ -286,7 +286,7 @@ fi
 if [ ! -e standard.midline ]; then
 
 	runit qit --verbose ${workflow}/SpanAuxMidline.py \
-    standard.mask/brain.mask.nii.gz \
+    standard.seg/tissue.mask.nii.gz \
     standard.seg/csf.mask.nii.gz \
     standard.midline
 

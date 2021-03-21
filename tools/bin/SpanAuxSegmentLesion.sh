@@ -206,6 +206,11 @@ runit qit --verbose MaskSet \
 	--label 3 \
 	--output ${tmp}/rois.nii.gz
 
+runit qit --verbose MaskExtract \
+	--input ${tmp}/rois.nii.gz \
+	--label 1 \
+	--output ${tmp}/tissue.mask.nii.gz
+
 echo "index,name" > ${tmp}/rois.csv
 echo "1,tissue" >> ${tmp}/rois.csv
 echo "2,csf" >> ${tmp}/rois.csv

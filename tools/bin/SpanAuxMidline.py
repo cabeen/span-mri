@@ -15,7 +15,7 @@ def main():
     if len(args) == 1:
         print("Usage:")
         print("")
-        print("  qit %s brain.mask.nii.gz csf.mask.nii.gz output" % basename(args[0]))
+        print("  qit %s tissue.mask.nii.gz csf.mask.nii.gz output" % basename(args[0]))
         print("")
         print("Description:")
         print("")
@@ -25,23 +25,23 @@ def main():
 
     Logging.info("started")
 
-    brain_mask_fn = args[1]
+    tissue_mask_fn = args[1]
     csf_mask_fn = args[2]
     output_dn = args[3]
 
     tmp_dn = "%s.tmp.%d" % (output_dn, int(time()))
     makedirs(tmp_dn)
 
-    Logging.info("using brain: %s" % brain_mask_fn)
+    Logging.info("using tissue: %s" % tissue_mask_fn)
     Logging.info("using csf: %s" % csf_mask_fn)
     Logging.info("using output: %s" % output_dn)
     Logging.info("using tmp: %s" % tmp_dn)
 
-    if not exists(brain_mask_fn) or not exists(csf_mask_fn):
+    if not exists(tissue_mask_fn) or not exists(csf_mask_fn):
         Logging.error("input not found!")
 
     Logging.info("reading input")
-    brain_mask = Mask.read(brain_mask_fn)
+    tissue_mask = Mask.read(tissue_mask_fn)
     csf_mask = Mask.read(csf_mask_fn)
     middle_mask = Mask.read(join(root, "middle.mask.nii.gz"))
 
@@ -58,7 +58,7 @@ def main():
 
     centroids = MaskCentroids.apply(csf_mask, middle_mask, True) 
     landmarks = VectsSource.create() 
-
+    hemis_mask = tissue_mask.proto()
     
     if centroids.size() == 0:
         Logging.info("no centroid found, saving NA values")
@@ -74,6 +74,10 @@ def main():
         f.write("shift_min,NA\n")
         f.write("shift_max,NA\n")
         f.write("shift_ratio,NA\n")
+        f.write("shift_index,NA\n")
+        f.write("tissue_volume_left,NA\n")
+        f.write("tissue_volume_right,NA\n")
+        f.write("tissue_volume_latidx,NA\n")
         f.close()
     
     else:
@@ -98,14 +102,14 @@ def main():
         iMax = 0
 
         for i in range(iNum):
-            if brain_mask.foreground(i, sample.getJ(), sample.getK()):
+            if tissue_mask.foreground(i, sample.getJ(), sample.getK()):
                 iMin = min(iMin, i)
                 iMax = max(iMax, i)
 
         Logging.info("iMin, iMax = %d, %d" % (iMin, iMax))
 
-        left = brain_mask.getSampling().world(iMin, sample.getJ(), sample.getK())
-        right = brain_mask.getSampling().world(iMax, sample.getJ(), sample.getK())
+        left = tissue_mask.getSampling().world(iMin, sample.getJ(), sample.getK())
+        right = tissue_mask.getSampling().world(iMax, sample.getJ(), sample.getK())
 
         for v in [shift, center, left, right, superior, inferior, anterior, posterior]:
             landmarks.add(v)
@@ -119,6 +123,13 @@ def main():
         shift_min = min(shift_left, shift_right)
         shift_max = max(shift_left, shift_right)
         shift_ratio = shift_min / shift_max
+        shift_mean = (shift_right + shift_left) / 2.0
+        shift_index = (shift_right - shift_left) / shift_mean
+
+        hemis_mask = MaskUtils.split(tissue_mask, landmarks)
+        vol_left = MaskUtils.volume(hemis_mask, 1)
+        vol_right = MaskUtils.volume(hemis_mask, 2)
+        vol_index = 2.0 * (vol_left - vol_right) / (vol_left + vol_right)
 
         f = open(join(tmp_dn, "map.csv"), 'w')
         f.write("name,value\n")
@@ -131,10 +142,15 @@ def main():
         f.write("shift_min,%g\n" % shift_min)
         f.write("shift_max,%g\n" % shift_max)
         f.write("shift_ratio,%g\n" % shift_ratio)
+        f.write("shift_index,%g\n" % shift_index)
+        f.write("tissue_volume_left,%g\n", vol_left)
+        f.write("tissue_volume_right,%g\n", vol_right)
+        f.write("tissue_volume_index,%g\n", vol_index)
         f.close()
         
     centroids.write(join(tmp_dn, "centroid.txt"))
     landmarks.write(join(tmp_dn, "landmarks.txt"))
+    hemis_mask.write(join(tmp_dn, "hemis.mask.nii.gz"))
 
     if exists(output_dn):
       bck = "%s.bck.%d" % (output_dn, int(time()))
