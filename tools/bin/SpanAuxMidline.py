@@ -60,8 +60,13 @@ def main():
     zSuperior = 11.0
     zInferior = 5.2
 
-    nearest = VectSource.create3D(7.414,6.074,8.732)
-    centroids = MaskCentroids.apply(csf_mask, middle_mask, nearest) 
+    module = MaskCentroids()
+    module.input = csf_mask
+    module.mask = middle_mask
+    #module.nearest = VectSource.create3D(5.828,5.958,7.593)
+    module.nearest = VectSource.create3D(7.375,6.072,7.553)
+    module.components = True
+    centroids = module.run().output
     landmarks = VectsSource.create() 
     hemis_mask = tissue_mask.proto()
     
