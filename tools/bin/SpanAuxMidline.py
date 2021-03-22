@@ -60,13 +60,15 @@ def main():
     zSuperior = 11.0
     zInferior = 5.2
 
+    region_mask = MaskUtils.and(csf_mask, middle_mask)
+    region_mask = MaskUtils.greater(region_mask, 0.050)
+    # with voxel size = 0.00159387, this corresponds to more than 18 voxels
+
     module = MaskCentroids()
-    module.input = csf_mask
-    module.mask = middle_mask
-    #module.nearest = VectSource.create3D(5.828,5.958,7.593)
+    module.input = region_mask
     module.nearest = VectSource.create3D(7.375,6.072,7.553)
-    module.components = True
     centroids = module.run().output
+
     landmarks = VectsSource.create() 
     hemis_mask = tissue_mask.proto()
     
