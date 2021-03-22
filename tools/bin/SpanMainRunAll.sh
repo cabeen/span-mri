@@ -16,9 +16,9 @@ for s in cases/source/*/*; do
   logd=$(echo ${s} | sed 's/source/log/g') 
   mkdir -p ${logd}
   qsubcmd --qlog ${logd} bash ${mybin}/SpanMainRun.sh \
-    --source  ${s} $(echo ${s} | sed 's/source/process/g') \
-    --correct ${s} $(echo ${s} | sed 's/source/correct/g') \
-    --source  ${s} $(echo ${s} | sed 's/source/process/g')
+    --source  ${s} \
+    --correct $(echo ${s} | sed 's/source/correct/g') \
+    --subject $(echo ${s} | sed 's/source/process/g')
 done
 
 ################################################################################
