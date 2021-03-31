@@ -92,6 +92,7 @@ qit TableSelect \
 
 qit TableWiden \
   --input ${output}/table.wide.csv \
+  --na 0 \
   --name measure --output ${output}/table.wide.csv
 
 cat ${output}/table.wide.csv | sed 's/volume_volume/volume/g' > ${output}/tmp \

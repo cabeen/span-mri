@@ -33,7 +33,6 @@ rm -rf group/fuse/lists/*
 
 for d in cases/process/*/*; do \
   if [ -e ${d}/standard.vis ]; then 
-    site=$(cat ${d}/native.import/site.txt)
     tp=$(cat ${d}/native.import/timepoint.txt)
     echo ${d} >> group/fuse/lists/${site}_${tp}.txt
   fi 
