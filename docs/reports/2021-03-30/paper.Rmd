@@ -1,0 +1,217 @@
+---
+title: "SPAN Stage One Report"
+author: "Ryan P. Cabeen"
+date: "2021-03-31"
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{makecell}
+output: 
+  pdf_document:
+    keep_tex: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r global_options, include=FALSE}
+w = 7
+h = 7
+#knitr::opts_chunk$set(fig.width=w, fig.height=h, fig.path='figs/',
+#                      echo=FALSE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+options(xtable.comment = FALSE)
+```
+
+
+```{r setup, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+library(stargazer)
+library(ggplot2)
+library(gridExtra)
+library(xtable)
+library(papeR)
+library(scales)
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+
+df <- read.csv("table.wide.csv")
+df$icv <- df$volume_tissue + df$volume_lesion + df$volume_csf
+df$site <- as.factor(df$site)
+df$timepoint <- as.factor(df$timepoint)
+df$fraction_left <- df$midline_tissue_volume_left / df$icv
+df$fraction_right <- df$midline_tissue_volume_right / df$icv
+df$fraction_lesion <- df$volume_lesion / df$icv
+df$fraction_csf <- df$volume_csf / df$icv
+df$t2_snr <- df$t2_qa_snr
+df$adc_snr <- df$adc_qa_snr
+```
+
+\newpage
+
+# Image quality
+
+```{r plot_snr, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=5, fig.width=7, fig.align="center"}
+sub.df <- df[,c("site", "adc_snr", "t2_snr")]
+melted <- melt(sub.df, id.vars=c("site"))
+my.plot <- ggplot(data=melted, aes(x=site, y=value, fill=variable)) + geom_point(position=position_jitterdodge(jitter.width=0.2), aes(color=variable), alpha=0.2) + geom_boxplot(alpha=0.5, outlier.shape=NA) + ylim(0, 15)
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_snr, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[,c("site", "adc_snr", "t2_snr")]
+melted <- melt(sub.df, id.vars=c("site"))
+grouped <- group_by(melted, site, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# Intra-cranial volume
+
+```{r plot_icv, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=5, fig.width=6, fig.align="center"}
+my.plot <- ggplot(data=df, aes(x=site, y=icv, fill=site)) + geom_jitter(alpha=0.2, width=0.15, aes(color=site)) + geom_boxplot(alpha=0.5, outlier.shape=NA) 
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_icv, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[,c("site", "icv")]
+melted <- melt(sub.df, id.vars=c("site"))
+grouped <- group_by(melted, site, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# Lesion volume at the early timepoint
+
+```{r plot_lesion_early, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+my.plot <- ggplot(data=df[df$timepoint == "early",], aes(x=site, y=volume_lesion, fill=site)) + geom_jitter(alpha=0.2, width=0.15, aes(color=site)) + geom_boxplot(alpha=0.5, outlier.shape=NA) 
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_lesion_early, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[df$timepoint=="early",c("site", "volume_lesion")]
+melted <- melt(sub.df, id.vars=c("site"))
+grouped <- group_by(melted, site, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# Lesion fraction at the early timepoint
+
+```{r plot_fraction_lesion_early, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+my.plot <- ggplot(data=df[df$timepoint == "early",], aes(x=site, y=fraction_lesion, fill=site)) + geom_jitter(alpha=0.2, width=0.15, aes(color=site)) + geom_boxplot(alpha=0.5, outlier.shape=NA) 
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_fraction_lesion_early, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[df$timepoint=="early",c("site", "fraction_lesion")]
+melted <- melt(sub.df, id.vars=c("site"))
+grouped <- group_by(melted, site, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# CSF volume
+
+```{r plot_csf_both, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+my.plot <- ggplot(data=df, aes(x=site, y=volume_csf, fill=timepoint)) + geom_point(position = position_jitterdodge(jitter.width=0.2), aes(color=timepoint), alpha=0.35) + geom_boxplot(alpha=0.2, outlier.shape=NA) + ylim(0, 30)
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_csf_both, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[,c("timepoint", "site", "volume_csf")]
+melted <- melt(sub.df, id.vars=c("timepoint", "site"))
+grouped <- group_by(melted, site, timepoint, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, timepoint, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# CSF fraction
+
+```{r plot_fraction_csf_both, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+my.plot <- ggplot(data=df, aes(x=site, y=fraction_csf, fill=timepoint)) + geom_point(position = position_jitterdodge(jitter.width=0.2), aes(color=timepoint), alpha=0.35) + geom_boxplot(alpha=0.2, outlier.shape=NA) + ylim(0, 0.1)
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_fraction_csf_both, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[,c("timepoint", "site", "fraction_csf")]
+melted <- melt(sub.df, id.vars=c("timepoint", "site"))
+grouped <- group_by(melted, site, timepoint, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, timepoint, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# Midline shift
+
+```{r plot_shift_both, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+my.plot <- ggplot(data=df, aes(x=site, y=midline_shift_index, fill=timepoint)) + geom_point(position = position_jitterdodge(jitter.width=0.2), aes(color=timepoint), alpha=0.35) + geom_boxplot(alpha=0.2, outlier.shape=NA) + ylim(-.50, .50)
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_shift_both, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[,c("timepoint", "site", "midline_shift_index")]
+melted <- melt(sub.df, id.vars=c("timepoint", "site"))
+grouped <- group_by(melted, site, timepoint, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, timepoint, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# Per-hemisphere tissue fraction at the early timepoint
+
+```{r plot_hemi_early, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+sub.df <- df[df$timepoint=="early",c("site", "fraction_left", "fraction_right")]
+melted <- melt(sub.df, id.vars=c("site"))
+my.plot <- ggplot(data=melted, aes(x=site, y=value, fill=variable)) + geom_point(position = position_jitterdodge(), aes(color=variable), alpha=0.35) + geom_boxplot(alpha=0.2, outlier.shape=NA)
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_hemi_early, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[df$timepoint=="early",c("site", "fraction_left", "fraction_right")]
+melted <- melt(sub.df, id.vars=c("site"))
+grouped <- group_by(melted, site, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# Per-hemisphere tissue fraction at the late timepoint
+
+```{r plot_hemi_late, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+sub.df <- df[df$timepoint=="late",c("site", "fraction_left", "fraction_right")]
+melted <- melt(sub.df, id.vars=c("site"))
+my.plot <- ggplot(data=melted, aes(x=site, y=value, fill=variable)) + geom_point(position = position_jitterdodge(), aes(color=variable), alpha=0.35) + geom_boxplot(alpha=0.2, outlier.shape=NA)
+grid.arrange(my.plot, nrow = 1)
+```
+
+```{r table_hemi_late, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[df$timepoint=="late",c("site", "fraction_left", "fraction_right")]
+melted <- melt(sub.df, id.vars=c("site"))
+grouped <- group_by(melted, site, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+grouped <- group_by(melted, variable)
+xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
+```
+
+# Lesion fraction vs midline shift in the early timepoint 
+
+```{r plot_lesion_shift, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+my.plot <- ggplot(data=df[df$timepoint=="early",], aes(x=fraction_lesion, y=midline_shift_index, color=site)) + geom_point(alpha=0.5) + geom_smooth(method="lm") + ylim(0, 0.5)
+grid.arrange(my.plot, nrow = 1)
+```
+
+# Early timepoint lesion fraction vs late timepoint midline shift
+
+```{r plot_lesion_shift_time, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+
+early.df <- df[df$timepoint=="early", c("subject", "site", "fraction_lesion")]
+late.df <- df[df$timepoint=="late", c("subject", "midline_shift_index")]
+sub.df <- merge(early.df, late.df, field="subject")
+
+my.plot <- ggplot(data=sub.df, aes(x=fraction_lesion, y=midline_shift_index, color=site)) + geom_point(alpha=0.5) + geom_smooth(method="lm") + xlab("early timepoint lesion fraction") + ylab("late timepoint midline shift")
+grid.arrange(my.plot, nrow = 1)
+```
