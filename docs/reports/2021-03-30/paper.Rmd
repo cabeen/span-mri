@@ -34,13 +34,13 @@ library(reshape2)
 library(dplyr)
 
 df <- read.csv("table.wide.csv")
-df$icv <- df$volume_tissue + df$volume_lesion + df$volume_csf
+df$tbv <- df$volume_tissue + df$volume_lesion + df$volume_csf
 df$site <- as.factor(df$site)
 df$timepoint <- as.factor(df$timepoint)
-df$fraction_left <- df$midline_tissue_volume_left / df$icv
-df$fraction_right <- df$midline_tissue_volume_right / df$icv
-df$fraction_lesion <- df$volume_lesion / df$icv
-df$fraction_csf <- df$volume_csf / df$icv
+df$fraction_left <- df$midline_tissue_volume_left / df$tbv
+df$fraction_right <- df$midline_tissue_volume_right / df$tbv
+df$fraction_lesion <- df$volume_lesion / df$tbv
+df$fraction_csf <- df$volume_csf / df$tbv
 df$t2_snr <- df$t2_qa_snr
 df$adc_snr <- df$adc_qa_snr
 ```
@@ -65,15 +65,15 @@ grouped <- group_by(melted, variable)
 xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
 ```
 
-# Intra-cranial volume
+# Total brain volume
 
-```{r plot_icv, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=5, fig.width=6, fig.align="center"}
-my.plot <- ggplot(data=df, aes(x=site, y=icv, fill=site)) + geom_jitter(alpha=0.2, width=0.15, aes(color=site)) + geom_boxplot(alpha=0.5, outlier.shape=NA) 
+```{r plot_tbv, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=5, fig.width=6, fig.align="center"}
+my.plot <- ggplot(data=df, aes(x=site, y=tbv, fill=site)) + geom_jitter(alpha=0.2, width=0.15, aes(color=site)) + geom_boxplot(alpha=0.5, outlier.shape=NA) 
 grid.arrange(my.plot, nrow = 1)
 ```
 
-```{r table_icv, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
-sub.df <- df[,c("site", "icv")]
+```{r table_tbv, results="asis", message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+sub.df <- df[,c("site", "tbv")]
 melted <- melt(sub.df, id.vars=c("site"))
 grouped <- group_by(melted, site, variable)
 xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
@@ -161,7 +161,7 @@ grouped <- group_by(melted, timepoint, variable)
 xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
 ```
 
-# Per-hemisphere tissue fraction at the early timepoint
+# Per-hemisphere non-infarcted tissue fraction at the early timepoint
 
 ```{r plot_hemi_early, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
 sub.df <- df[df$timepoint=="early",c("site", "fraction_left", "fraction_right")]
@@ -179,7 +179,7 @@ grouped <- group_by(melted, variable)
 xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
 ```
 
-# Per-hemisphere tissue fraction at the late timepoint
+# Per-hemisphere non-infarcted tissue fraction at the late timepoint
 
 ```{r plot_hemi_late, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
 sub.df <- df[df$timepoint=="late",c("site", "fraction_left", "fraction_right")]
@@ -197,10 +197,10 @@ grouped <- group_by(melted, variable)
 xtable(summarise(grouped, num=length(value), mean=mean(value, na.rm=T), sd=sd(value, na.rm=T), min=min(value, na.rm=T), max=max(value, na.rm=T), cv=sd/mean))
 ```
 
-# Lesion fraction vs midline shift in the early timepoint 
+# Lesion volume vs midline shift in the early timepoint 
 
 ```{r plot_lesion_shift, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
-my.plot <- ggplot(data=df[df$timepoint=="early",], aes(x=fraction_lesion, y=midline_shift_index, color=site)) + geom_point(alpha=0.5) + geom_smooth(method="lm") + ylim(0, 0.5)
+my.plot <- ggplot(data=df[df$timepoint=="early",], aes(x=volume_lesion, y=midline_shift_index, color=site)) + geom_point(alpha=0.5) + geom_smooth(method="lm") + ylim(0, 0.5)
 grid.arrange(my.plot, nrow = 1)
 ```
 
