@@ -65,7 +65,7 @@ done >> ${output}/tables/meta.csv
 echo "  ... grouping tables" 
 qit --verbose MapCat \
   --pattern ${input}/%{timepoint}/%{subject}/standard.map/%{metric}.csv \
-  --vars timepoint=early,late subject=${output}/sids.txt metric=midline,adc_qa,adc_base_mean,adc_base_harm_mean,adc_rate_mean,adc_rate_harm_mean,adc_rate_std,adc_rate_harm_std,t2_base_mean,t2_base_harm_mean,t2_rate_mean,t2_rate_harm_mean,t2_rate_std,t2_rate_harm_std,t2_qa,conf_mean,volume \
+  --vars timepoint=early,late subject=${output}/sids.txt metric=midline,adc_qa,adc_base_mean,adc_base_harm_mean,adc_rate_mean,adc_rate_harm_mean,adc_rate_std,adc_rate_harm_std,t2_base_mean,t2_base_harm_mean,t2_rate_mean,t2_rate_harm_mean,t2_rate_std,t2_rate_harm_std,t2_qa,conf_mean,volume,regions \
   --skip \
   --output ${output}/tables/metrics.csv
 

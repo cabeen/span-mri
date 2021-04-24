@@ -282,6 +282,12 @@ if [ ! -e standard.seg ]; then
      --prior ${data}/lesion.mask.nii.gz \
      --output standard.seg
 
+  runit ${qitcmd} MaskIntersection \
+     --left ${data}/regions.nii.gz \
+     --right standard.seg/lesion.mask.nii.gz \
+     --output standard.seg/lesion.regions.nii.gz
+  runit cp ${data}/lesion.regions.csv standard.seg/lesion.regions.csv
+
 fi
 
 if [ ! -e standard.midline ]; then
@@ -322,6 +328,11 @@ if [ ! -e standard.map ]; then
     --input standard.seg/rois.nii.gz \
     --lookup standard.seg/rois.csv \
     --output ${tmp}/volume.csv
+
+  runit ${qitcmd} MaskMeasure \
+    --input standard.seg/lesion.regions.nii.gz \
+    --lookup standard.seg/lesion.regions.csv \
+    --output ${tmp}/regions.csv
 
   mv ${tmp} standard.map
 fi
