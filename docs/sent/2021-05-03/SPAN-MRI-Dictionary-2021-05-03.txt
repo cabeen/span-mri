@@ -1,0 +1,66 @@
+volume_csf:
+  the total volume of cerebro-spinal fluid (mm3)
+
+volume_tissue:
+  the total volume of normal-appearing brain tissue (mm3)
+
+volume_lesion:
+  the total volume of lesion in (mm3)
+
+adc_rate_mean_tissue:
+	the apparent diffusivity coefficient (mm2/s) of normal appearing brain tissue
+
+adc_rate_mean_csf:
+  the apparent diffusivity coefficient (mm2/s) of cerebro-spinal fluid 
+
+adc_rate_mean_lesion:
+  the apparent diffusivity coefficient (mm2/s) of lesion
+
+t2_rate_mean_tissue:
+  the reciprocal T2 relaxation rate of normal appearing tissue
+
+t2_rate_mean_csf:
+  the reciprocal T2 relaxation rate of cerebro-spinal fluid
+
+t2_rate_mean_lesion:
+  the reciprocal T2 relaxation rate of lesion
+
+adc_qa_snr:
+	the signal-to-noise ratio of the diffusion scan.  computed by taking the
+  ratio of the average signal of foreground (head) over the average signal of
+  background (air) 
+
+t2_qa_snr:
+	the signal-to-noise ratio of the T2 scan.  computed by taking the
+  ratio of the average signal of foreground (head) over the average signal of
+  background (air) 
+
+midline_shift_left:
+  the distance of the midline to the left lateral extent of the brain (mm)
+
+midline_shift_right
+  the distance of the midline to the right lateral extent of the brain (mm)
+
+midline_shift_percent:
+	the percentage of total brain width taken by the distance of the apparent
+  midline to the expected midline (percentage 0 to 100)
+
+midline_shift_ratio:
+	the ratio of the minimum shift over the maximum shift, taken from the left
+  and right distances above, i.e. min(midline_shift_left, midline_shift_right)    / max(midline_shift_left, midline_shift_right)
+
+midline_shift_index
+	the lateralization index of the difference of the left and right distances
+  over the average of the left and right (unitless). i.e. (midline_shift_right 
+  - midline_shift_left) / (midline_shift_left + midline_shift_right) / 2.0
+
+midline_tissue_volume_left
+  the volume of brain tissue in the left hemisphere (mm3)
+
+midline_tissue_volume_right
+  the volume of brain tissue in the right hemisphere (mm3)
+
+midline_tissue_volume_index
+  the lateralization index of the hemispheric tissue volumes, i.e. 
+  (midline_tissue_volume_right - midline_tissue_volume_left ) / 
+  (midline_tissue_volume_right + midline_tissue_volume_left) / 2.0

@@ -1,0 +1,20 @@
+Failed conversion: 
+late KW9444 
+
+Incomplete ADC:
+early KW9346
+early QC3037
+late PH1100
+late PH1500
+late VH2011
+late KX0055
+
+Severe motion artifact:
+early FR8256
+late VH5214
+early QC3839
+late VH1921
+late AM4572
+early VH1889
+late VH1987
+early KX0028
