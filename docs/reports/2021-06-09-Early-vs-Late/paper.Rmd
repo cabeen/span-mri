@@ -1,0 +1,249 @@
+---
+title: "SPAN Stage One Report - Early vs Late Metrics"
+author: "Ryan P. Cabeen, Cenk Ayata, and SPAN"
+date: "2021-06-09"
+header-includes:
+- \usepackage{booktabs}
+- \usepackage{makecell}
+output: 
+  pdf_document:
+    keep_tex: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r global_options, include=FALSE}
+w = 7
+h = 7
+#knitr::opts_chunk$set(fig.width=w, fig.height=h, fig.path='figs/',
+#                      echo=FALSE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+options(xtable.comment = FALSE)
+```
+
+
+```{r setup, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE}
+library(stargazer)
+library(ggplot2)
+library(gridExtra)
+library(xtable)
+library(papeR)
+library(scales)
+library(ggplot2)
+library(reshape2)
+library(dplyr)
+
+df <- read.csv("SPAN-Stage1-DataTable-2021-05-26.csv")
+
+early.df <- df[df$timepoint == "early", c("site", "subject", "volume_lesion", "volume_tissue", "volume_csf")]
+early.df$early_lesion <- early.df$volume_lesion 
+early.df$early_tissue <- early.df$volume_tissue
+early.df$early_csf    <- early.df$volume_csf
+early.df <- early.df[,c("site", "subject", "early_lesion", "early_tissue", "early_csf")]
+early.df$early_total <- early.df$early_lesion + early.df$early_csf + early.df$early_tissue
+
+late.df <- df[df$timepoint == "late", c("subject", "midline_tissue_volume_left", "midline_tissue_volume_right", "volume_tissue", "volume_csf")]
+late.df$late_midline_left <- late.df$midline_tissue_volume_left
+late.df$late_midline_right <- late.df$midline_tissue_volume_right
+late.df$late_tissue <- late.df$volume_tissue
+late.df$late_csf    <- late.df$volume_csf
+late.df <- late.df[,c("subject", "late_tissue", "late_csf", "late_midline_left", "late_midline_right")]
+late.df$late_total <- late.df$late_csf + late.df$late_tissue
+
+compare.df <- merge(early.df, late.df, by="subject")
+
+# early_mean <- mean(compare.df$early_total)
+# late_mean <- mean(compare.df$late_total)
+# early_sd <- sd(compare.df$early_total)
+# late_sd <- sd(compare.df$late_total)
+# 
+# stats <- NULL
+# 
+# for (site in unique(compare.df$site))
+# {
+#    filter <- compare.df$site == site
+#    stats[[site]] <- list(early_mean=mean(compare.df$early_total[filter]),
+#                              early_sd=sd(compare.df$early_total[filter]),
+#                              late_mean=mean(compare.df$late_total[filter]),
+#                              late_sd=sd(compare.df$late_total[filter]))
+# }
+# 
+# for (i in c(1:nrow(compare.df)))
+# {
+#     my.stats <- stats[[compare.df[i, "site"]]]
+#    
+#     for (j in c("early_tissue", "early_csf", "early_lesion", "early_total"))
+#     { 
+#       compare.df[i, sprintf("%s_harm", j)] <- late_mean + (compare.df[i, j] - my.stats$late_mean)
+#     }
+#     
+#     for (j in c("late_tissue", "late_csf", "late_total", "late_midline_left", "late_midline_right"))
+#     { 
+#       compare.df[i, sprintf("%s_harm", j)] <- late_mean + late_sd * (compare.df[i, j] - my.stats$late_mean) / my.stats$late_sd
+#     }
+# } 
+
+```
+
+This report investigates the relationship between early timepoint lesion volume
+and late timepoint atropy.  We examine the general relationship and further
+refine the analysis by accounting for inter-site differences and also by
+refining the analysis to look at hemisphere-specific atropy measures.
+
+\newpage
+
+# Does early timepoint lesion predict late timepoint atropy? 
+
+An initial test shows a strong relationship between early timepoint and late
+tissue volume (whole brain).  There are clearly inter-site differences in total
+brain volume at the late timepoint, so let's incorporate that into the model and
+see how that improves things.
+
+```{r plot_raw, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+ggplot(data=compare.df, aes(x=early_lesion, y=late_tissue, color=site, group=site)) + geom_point() + geom_smooth(method="lm") + xlim(0, 120) + ylim(280, 400) + xlab("Lesion Volume at Early Timepoint") + ylab("Tissue Volume at Late Timepoint")
+
+summary(lm(data=compare.df, late_tissue ~ early_lesion))
+```
+
+# When we correct for inter-site differences, how does early timepoint lesion predict late timepoint atropy?
+
+We see that the inter-site differences are a major source of variance, and
+simplying adding the site as a covariate improves the model dramatically,
+increasing the R2 from 0.142 to 0.67.  The slopes look similar, but next, let's
+check that by adding interaction by site.
+
+```{r plot_harm, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+model <- lm(data=compare.df, late_tissue ~ early_lesion + site)
+
+for (i in c(1:nrow(compare.df)))
+{
+    coef <- model$coefficients[sprintf("site%s", compare.df[i, "site"])]
+    
+    if (is.na(coef))
+    {
+        coef <- 0
+    }
+   
+    # for (j in c("early_tissue", "early_csf", "early_lesion", "early_total"))
+    # { 
+    #   compare.df[i, sprintf("%s_harm", j)] <- late_mean + (compare.df[i, j] - my.stats$late_mean)
+    # }
+    
+    for (j in c("late_tissue", "late_csf", "late_total", "late_midline_left", "late_midline_right"))
+    { 
+      compare.df[i, sprintf("%s_harm", j)] <- compare.df[i, j] - coef
+    }
+} 
+
+ggplot(data=compare.df, aes(x=early_lesion, y=late_tissue_harm, color=site, group=site)) + geom_point() + geom_smooth(method="lm") + xlim(0, 120) + ylim(280, 400) + xlab("Lesion Volume at Early Timepoint") + ylab("Tissue Volume at Late Timepoint")
+
+summary(lm(data=compare.df, late_tissue ~ early_lesion + site))
+```
+
+# Are there site-specific rates for early timepoint lesion predict late timepoint atropy?
+
+When including the interaction term, the model doesn't improve in adjusted R2,
+and non of the interactions are significant, so we can safely say that all of
+the sites have a similar relationship between early timepoint lesion and late
+timepoint tissue volume.
+
+This analysis has only looked at whole brain tissue volume, so next we can look
+at hemisphere-specific effects.
+
+```{r plot_inter, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+summary(lm(data=compare.df, late_tissue ~ early_lesion * site))
+```
+
+\newpage
+
+# Looking at only the isilateral hemisphere, how does early timepoint lesion predict late timepoint atropy?
+
+Looking first at the hemisphere ipsilateral to the lesion, we found a similar
+trend, but with an increased R2.  What about again controlling for inter-site differences?
+
+```{r plot_raw_ipsi, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+ggplot(data=compare.df, aes(x=early_lesion, y=late_midline_right, color=site, group=site)) + geom_point() + geom_smooth(method="lm") + xlim(0, 120) + ylim(100, 220) + xlab("Lesion Volume at Early Timepoint") + ylab("Ipsi Hemi Tissue Volume at Late Timepoint")
+
+summary(lm(data=compare.df, late_midline_right ~ early_lesion))
+```
+
+# Looking at only the isilateral hemisphere and controlling for inter-site differences, how does early timepoint lesion predict late timepoint atropy?
+
+Again, we find that inter-site differences in brain volume are a major
+contributor to the variance, but a covariate can control this quite well.  The
+overall R2 has increased from 0.67 to 0.73. Next, let's look at the side
+contralateral to the lesion.
+
+```{r plot_harm_ipsi, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+model <- lm(data=compare.df, late_midline_right ~ early_lesion + site)
+
+for (i in c(1:nrow(compare.df)))
+{
+    coef <- model$coefficients[sprintf("site%s", compare.df[i, "site"])]
+    
+    if (is.na(coef))
+    {
+        coef <- 0
+    }
+   
+    # for (j in c("early_tissue", "early_csf", "early_lesion", "early_total"))
+    # { 
+    #   compare.df[i, sprintf("%s_harm", j)] <- late_mean + (compare.df[i, j] - my.stats$late_mean)
+    # }
+    
+    for (j in c("late_tissue", "late_csf", "late_total", "late_midline_left", "late_midline_right"))
+    { 
+      compare.df[i, sprintf("%s_harm", j)] <- compare.df[i, j] - coef
+    }
+} 
+
+ggplot(data=compare.df, aes(x=early_lesion, y=late_midline_right_harm, color=site, group=site)) + geom_point() + geom_smooth(method="lm") + xlim(0, 120) + ylim(100, 220) + xlab("Lesion Volume at Early Timepoint") + ylab("Ipsi Hemi Tissue Volume at Late Timepoint")
+
+summary(lm(data=compare.df, late_midline_right ~ early_lesion + site))
+```
+
+# Looking at only the contralateral hemisphere, how does early timepoint lesion predict late timepoint atropy?
+
+When looking at tissue volume on the hemisphere contralateral to the lesion, we
+see that there is now no relation relationship between early timepoint lesion
+volume and late timepoint tissue volume, suggesting that the atrophy is
+localized to the ispilateral side.
+ 
+
+```{r plot_raw_contra, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+ggplot(data=compare.df, aes(x=early_lesion, y=late_midline_left, color=site, group=site)) + geom_point() + geom_smooth(method="lm") + xlim(0, 120) + ylim(100, 220) + xlab("Lesion Volume at Early Timepoint") + ylab("Contra Hemi Tissue Volume at Late Timepoint")
+
+summary(lm(data=compare.df, late_midline_left ~ early_lesion))
+```
+
+# Looking at only the contralateral hemisphere and controlling for inter-site differences, how does early timepoint lesion predict late timepoint atropy?
+
+We further confirm this finding by including a covariate for site.
+
+```{r plot_harm_contra, message=FALSE, warning=FALSE, error=FALSE, echo=FALSE, fig.height=4, fig.width=5, fig.align="center"}
+model <- lm(data=compare.df, late_midline_left ~ early_lesion + site)
+
+for (i in c(1:nrow(compare.df)))
+{
+    coef <- model$coefficients[sprintf("site%s", compare.df[i, "site"])]
+    
+    if (is.na(coef))
+    {
+        coef <- 0
+    }
+   
+    # for (j in c("early_tissue", "early_csf", "early_lesion", "early_total"))
+    # { 
+    #   compare.df[i, sprintf("%s_harm", j)] <- late_mean + (compare.df[i, j] - my.stats$late_mean)
+    # }
+    
+    for (j in c("late_tissue", "late_csf", "late_total", "late_midline_left", "late_midline_left"))
+    { 
+      compare.df[i, sprintf("%s_harm", j)] <- compare.df[i, j] - coef
+    }
+} 
+
+ggplot(data=compare.df, aes(x=early_lesion, y=late_midline_left_harm, color=site, group=site)) + geom_point() + geom_smooth(method="lm") + xlim(0, 120) + ylim(100, 220) + xlab("Lesion Volume at Early Timepoint") + ylab("Contra Hemi Tissue Volume at Late Timepoint")
+
+summary(lm(data=compare.df, late_midline_left ~ early_lesion + site))
+```
