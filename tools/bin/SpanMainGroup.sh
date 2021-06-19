@@ -12,9 +12,9 @@
 mybin=$(cd $(dirname ${0}); pwd -P)
 name=$(basename $0)
 
-if [ ! -e cases/process ]; then echo "process directory not found!"; exit; fi
+if [ ! -e process ]; then echo "process directory not found!"; exit; fi
 
-input=cases/process
+input=process
 output=group
 
 function runit 
@@ -100,7 +100,7 @@ cat ${output}/table.wide.csv | sed 's/volume_volume/volume/g' > ${output}/tmp \
 
 qit TableSelect \
   --input ${output}/table.wide.csv \
-  --retain subject,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr,midline_shift_percent,midline_shift_ratio,midline_shift_index,midline_shift_left,midline_shift_right,midline_tissue_volume_left,midline_tissue_volume_right,midline_tissue_volume_index \
+  --retain subject,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr,midline_shift_percent,midline_shift_ratio,midline_shift_index,midline_shift_left,midline_shift_right,midline_tissue_volume_left,midline_tissue_volume_right,midline_tissue_volume_index,regions_volume_lesion_striatum,regions_volume_lesion_cortex,regions_volume_lesion_thalamus,regions_volume_lesion_hippocampus \
   --output ${output}/table.wide.csv
 
 qit TableSelect \

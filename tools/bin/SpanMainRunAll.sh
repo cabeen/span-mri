@@ -11,11 +11,11 @@
 
 mybin=$(cd $(dirname ${0}); pwd -P)
 
-for s in cases/source/*/*; do 
+for s in source/*/*; do 
   subd=$(echo ${s} | sed 's/source/process/g')
   logd=$(echo ${s} | sed 's/source/log/g') 
 
-  if [ ! -e ${subd}/standard.vis ]; then
+  if [ ! -e ${subd}/standard.vis ] || [ ! -e ${subd}/standard.map ]; then
     mkdir -p ${logd}
     qsubcmd --qlog ${logd} bash ${mybin}/SpanMainRun.sh \
       --source  ${s} \
