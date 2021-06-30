@@ -70,10 +70,9 @@ echo "started ${name}"
 
 cd ${subject}
 
-for mask in lesion brain; do
-	for thresh in 600 625 650 675 700 725 750 760 770 \
-								775 780 785 790 795 800 805 810 815 \
-								820 825 830 835 840 845 850 875 900; do
+for mask in brain lesion; do
+	for thresh in 600 650 700 750 760 770 775 780 785 790 795 800 805 \
+                810 815 820 825 830 835 840 845 850 860 870 880 890 900; do
 
     outdir=evaluation/mask.${mask}.thresh.${thresh}
 
@@ -81,7 +80,7 @@ for mask in lesion brain; do
     
       runit bash ${workflow}/SpanAuxSegmentLesion.sh \
          --input standard.harm \
-         --t2RateThreshLesion ${thresh} \
+         --t2RateThreshLesion 0.${thresh} \
          --mask standard.mask/brain.mask.nii.gz \
          --prior ${data}/${mask}.mask.nii.gz \
          --output ${outdir}/standard.seg
@@ -181,8 +180,10 @@ for mask in lesion brain; do
         --input ${tmp}/brain.nii.gz \
         --output ${tmp}/anatomy.nii.gz
     
-      for labels in anatomy brain lesion csf rois; do 
-        for param in rare {adc,t2}_{rate,base}; do
+      #for labels in anatomy brain lesion csf rois; do 
+      for labels in lesion; do 
+        # for param in rare {adc,t2}_{rate,base}; do
+        for param in rare {adc,t2}_rate; do
           visit standard.harm/${param}.nii.gz ${param} ${labels} ${tmp}
         done
       done
