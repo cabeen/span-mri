@@ -71,8 +71,8 @@ echo "started ${name}"
 cd ${subject}
 
 for mask in brain lesion; do
-	for thresh in 600 650 700 750 760 770 775 780 785 790 795 800 805 \
-                810 815 820 825 830 835 840 845 850 860 870 880 890 900; do
+	for thresh in 300 350 400 450 500 550 600 650 700 750 760 770 775 780 785 790 795 \
+                800 805 810 815 820 825 830 835 840 845 850 860 870 880 890 900 950; do
 
     outdir=evaluation/mask.${mask}.thresh.${thresh}
 
