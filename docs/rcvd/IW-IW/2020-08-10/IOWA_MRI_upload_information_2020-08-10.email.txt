@@ -1,6 +1,0 @@
-Here is the scan information for our recent Day 2 MRI scans for the Iowa pilot study. I have included comments on the acquisitions on the first page and scan information for each of the ten animals. Ryan and I have had some communications on this to assure that all of the information is accessible in the DICOM files.
-
---
-Dan Thedens
-dan-thedens@uiowa.edu
-
