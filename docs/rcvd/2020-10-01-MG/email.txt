@@ -1,0 +1,46 @@
+Thanks -- I haven't worked with TTC before, so it's interesting to check it out.  By the way, I met with Cenk today to review the segmentations, and he had a few concerns that he thought could be helped by looking at TTC, so perhaps I'll start another thread for that so we can discuss
+
+Ryan P. Cabeen, PhD
+Postdoctoral Scholar
+Laboratory of Neuro Imaging
+USC Stevens Neuroimaging and Informatics Institute
+Keck School of Medicine of USC
+University of Southern California
+2025 Zonal Ave.
+Los Angeles, CA 90033
+Tel: (323) 44-BRAIN
+Email: rcabeen@loni.usc.edu
+Web: http://cabeen.io
+
+On Oct 1, 2020, at 8:34 AM, Patrick Lyden <plyden@usc.edu> wrote:
+
+There are two TINY hemorrhages here, likely way too small for you to detect. We will keep looking for some good hemorrhages, but for now, do not do any further work on this. 
+
+From: Karisma A Nagarkatti <nagarkat@usc.edu> 
+Sent: Tuesday, September 29, 2020 8:28 AM
+To: Patrick Lyden <plyden@usc.edu>
+Subject: Fw: TTC Images
+
+
+From: Qin, Tao <TQIN@mgh.harvard.edu>
+Sent: Tuesday, September 29, 2020 7:55 AM
+To: Karisma A Nagarkatti <nagarkat@usc.edu>; Jessica Lamb <lambj@usc.edu>
+Subject: TTC Images
+
+Hi Karisma and Jessica,
+
+Attached are the TTC images for the 5 animals we did for the 48h endpoint. Hemorrhage is present in animals QC3021, slices #3-5, and QC3025, slice #5.
+
+Best,
+Tom Qin
+
+Research Lab Manager
+Neurovascular Research Lab
+Massachusetts General Hospital
+149 13th Street, RM6403
+Charlestown, MA 02129
+Tel: 617-726-8440
+Email: tqin@mgh.harvard.edu
+
+The information in this e-mail is intended only for the person to whom it is addressed. If you believe this e-mail was sent to you in error and the e-mail contains patient information, please contact the Mass General Brigham Compliance HelpLine at http://www.massgeneralbrigham.org/complianceline . If the e-mail was sent to you in error but does not contain patient information, please contact the sender and properly dispose of the e-mail.
+<QC3020 TTC.JPG><QC3021 TTC.JPG><QC3022 TTC.JPG><QC3023 TTC.JPG><QC3025 TTC.JPG>
