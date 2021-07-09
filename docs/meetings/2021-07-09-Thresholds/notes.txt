@@ -1,0 +1,47 @@
+Meeting with Cenk
+
+- Papers
+    - Initial methods paper
+    - Second describing controls
+        - Variables: Age, Sex, Site, Laser dopler
+    - Third reporting association between MRI with behavior
+        - Variables: stroke outcome
+- Basal brain artifact
+    - Quadrigeminal cistern
+    - We can exclude it from a mask
+- Lateral perioptical artifact
+    - Is it optical stroke? We can test that
+    - Is it related to turning behavior
+- TODO:
+    - Compute double derivatives
+    - Can we extract a parameter summarizing the shape?
+    - Can we estimate the slope in a window , e.g. 500 to 800
+    - Plan:
+        - Pick an upper threshold for measuring volume
+        - Look at outliers of trajectories
+    - Two patterns:
+        - Fast ramp up to big lesion, are they real?
+        - Fast gradual ramp to slower
+- Updated lesion segmentations
+    - New Threshold: 875
+    - New exclusion mask (removes basal artifact, but not perioptical one)
+    - Next tuesday at noon
+
+Stage One PI Rehash Meeting: July 13
+
+The staining is inconsistent
+
+Try 0.85? with more restrictive lesion mask
+
+Look for repeated with different FoV
+
+For tuesday meeting:
+
+- Show a few cases: Rats, Aged, Obese
+- Show image contrast
+
+How to find a good threshold?
+
+- Look for plateau in lesion vs threshold plot?
+    - How to meaningfully compare different lesion sizes
+- Compare lesion volume vs. later atrophy?
