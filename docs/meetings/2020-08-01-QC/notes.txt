@@ -1,0 +1,13 @@
+# Observations 2020-08
+
+ADC scans
+
+- U Iowa scans each bvalue separately, all other sites have a combined scan
+- QC2310 from Yale had a duplicate ADC scan
+    - In this case they were identical, so I added code to skip the second one
+    - Why did this happen?  Is it safe to always choose one arbitrarily?
+    - update: this was caused by a failure during upload, leading to two copies
+
+RARE
+
+- QC3894 from JHU and QC2310 from Yale had duplicates
