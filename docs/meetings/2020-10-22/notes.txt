@@ -1,0 +1,49 @@
+# Case Notes
+
+MM0200: small amount of overestimation, especially in posterior sections and angle of lesion boundary on top
+
+MM0206: T2 and ADC agree and there is a reasonable match between TTC and MRI.  There may be deformations to consider, due to changes in CSF pressure and the absence of the skull to constrain the brain (see the exterior bulges)
+
+QC3020: slight overestimation, but good overall, hippo seems to bulge at the ends.  one concern is inflammation from the filament insertion, which would introduce fluid in tissue
+
+QC3022: very faint differences in TTC are being picked up as infarct on MRI.  important to point this out
+
+# Conclusions
+
+- Tends to estimate larger lesion extent
+- MRI sensitive to even slight differences in TTC stain
+- Is it specific? We may need additional experiments to answer (see below)
+- T2-based MRI is more sensitive than TTC, but is it also more specific?  We will want to consider how the algorithm performs
+- Why T2-based segmentation? We need to establish challenges with ADC across sites perhaps
+- Test out an alternative segmentation algo that considers ADC drops as well — compare this with our existing algorithm that favors T2.  Compare this with TTC, ideally.  We hypothesize this ADC centric approach will underestimate volume
+
+# Brainstorming
+
+Composite score: combine lesion volume and average T2 value to reflect something like lesion severity.  This may correlate more with TTC derived extent
+
+Possible limitations of TTC:
+
+- White matter doesn't stain
+- Staining depends on underlying cell density, so it is relative
+- Edges are problematic, prone to artifact
+- Visual confounds for human readers, visual system is limited
+- Diffuse edges are challenging
+
+How to evaluate TTC:
+
+- Consider quantitative approach using ImageJ
+- We would need to mirror TTC image to get the contralateral signal as a point of reference
+- Human experiment to demonstrate possible inconsistencies
+- E.g. have them drawn a boundary and then later do A-B testing of stain intensities, maybe they disagree
+
+Paper:
+
+- What are challenges we faced and recommended solutions
+    - Multi-site
+    - Many scans
+- How valuable is TTC and how does it compare to MRI
+- Additional experiment:
+    - Do standard histology of same specimen
+    - Compare MRI, TTC, H&E, cresyl violet to resolve ambiguities
+    - TODO: remind about funding this idea with a small supplement
+    - Possibly look at multiple sites, healthy animals too

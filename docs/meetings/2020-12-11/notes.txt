@@ -1,0 +1,41 @@
+Count number of usable animals with mri and ttc per site
+
+Ask about 3328
+
+tTC systematically loses lesion tissue
+
+Show examples of TTC problems 
+
+Poor staining
+
+Lighting 
+
+Falling apart tissue
+
+Inter eater variability 
+
+Post Morten interval
+
+Brain deformations 
+
+If an animal dies, TTC is useless, but MRI is okay.  MRI is less of a gamble as it is robust to unexpected death 
+
+Start writing in mind map
+
+More deep learning of lesion 
+
+Fix dee learning training
+
+Journals:
+
+Stroke, moderate IF, restrictive format
+
+Brain journal 
+
+JAMA neurology
+
+Circulation
+
+Annals of neurology
+
+Lancet Neurology
