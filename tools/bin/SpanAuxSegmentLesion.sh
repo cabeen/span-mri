@@ -45,7 +45,7 @@ function runit
 workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
 
-t2RateThreshLesion=0.775
+t2RateThreshLesion=0.825
 adcRateThreshLesion=1.25
 adcBaseThreshLesion=0.25
 sigmoidHighThreshLesion=0.5
