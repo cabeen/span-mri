@@ -1,0 +1,9 @@
+library(ggplot2)
+
+df <- read.csv("SPAN-Stage1-DataTable-2021-07-13.csv")
+
+ggplot(data=df, aes(x=site, y=midline_tissue_volume_right, color=timepoint, fill=timepoint)) + geom_point(alpha=0.5, position=position_jitterdodge(jitter.width=0.1)) + geom_boxplot(alpha=0.25, color="black", outlier.shape=NA) + ylim(0, 200)
+
+ggsave("midline_tissue_volume_right.pdf")
+ggplot(data=df, aes(x=site, y=midline_tissue_volume_left, color=timepoint, fill=timepoint)) + geom_point(alpha=0.5, position=position_jitterdodge(jitter.width=0.1)) + geom_boxplot(alpha=0.25, color="black", outlier.shape=NA) + ylim(0, 200)
+ggsave("midline_tissue_volume_left.pdf")
