@@ -45,13 +45,15 @@ function runit
 workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
 
-t2RateThreshLesion=0.825
+t2RateThreshLesion=0.80
 adcRateThreshLesion=1.25
 adcBaseThreshLesion=0.25
 sigmoidHighThreshLesion=0.5
-sigmoidLowThreshLesion=0.25
+sigmoidLowThreshLesion=0.45
+
+numErodeBrain=1
 numOpenLesion=2
-numDilateLesion=2
+numDilateLesion=1
 
 t2RateThreshCsf=0.65
 adcRateThreshCsf=1.65
@@ -74,6 +76,7 @@ while [ "$1" != "" ]; do
         --adcBaseThreshLesion)     shift; adcBaseThreshLesion=$1 ;;
         --sigmoidHighThreshLesion) shift; sigmoidHighThreshLesion=$1 ;;
         --sigmoidLowThreshLesion)  shift; sigmoidLowThreshLesion=$1 ;;
+        --numErodeBrain)           shift; numErodeBrain=$1 ;;
         --numOpenLesion)           shift; numOpenLesion=$1 ;;
         --numDilateLesion)         shift; numDilateLesion=$1 ;;
         --t2RateThreshCsf)         shift; t2RateThreshCsf=$1 ;;
@@ -99,7 +102,8 @@ echo "started ${name}"
 tmp=${output}.tmp.${RANDOM}
 mkdir -p ${tmp}
 
-runit qit --verbose MaskErode --num 2 \
+runit qit --verbose MaskErode \
+   --num ${numErodeBrain} \
 	 --input ${mask} \
 	 --output ${tmp}/interior.mask.nii.gz
 
@@ -131,9 +135,12 @@ runit qit --verbose VolumeVoxelMathScalar \
 	--expression "a*b*c" \
 	--output ${tmp}/lesion.rawprob.nii.gz
 
-runit qit --verbose VolumeFilterMedian \
-	--input ${tmp}/lesion.rawprob.nii.gz \
-	--output ${tmp}/lesion.medprob.nii.gz
+#runit qit --verbose VolumeFilterMedian \
+#	--input ${tmp}/lesion.rawprob.nii.gz \
+#	--output ${tmp}/lesion.medprob.nii.gz
+
+cp ${tmp}/lesion.rawprob.nii.gz \
+   ${tmp}/lesion.medprob.nii.gz
 
 runit qit --verbose VolumeThreshold \
 	--input ${tmp}/lesion.medprob.nii.gz \
