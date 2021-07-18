@@ -1,0 +1,339 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={SPAN Stage One Report - Early vs Late Metrics},
+  pdfauthor={Ryan P. Cabeen, Cenk Ayata, and SPAN},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{makecell}
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\title{SPAN Stage One Report - Early vs Late Metrics}
+\author{Ryan P. Cabeen, Cenk Ayata, and SPAN}
+\date{2021-07-13}
+
+\begin{document}
+\maketitle
+
+This report investigates the relationship between early timepoint lesion
+volume and late timepoint atropy. We examine the general relationship
+and further refine the analysis by accounting for inter-site differences
+and also by refining the analysis to look at hemisphere-specific atropy
+measures.
+
+\newpage
+
+\hypertarget{does-early-timepoint-lesion-predict-late-timepoint-atropy}{%
+\section{Does early timepoint lesion predict late timepoint
+atropy?}\label{does-early-timepoint-lesion-predict-late-timepoint-atropy}}
+
+An initial test shows a strong relationship between early timepoint and
+late tissue volume (whole brain). There are clearly inter-site
+differences in total brain volume at the late timepoint, so let's
+incorporate that into the model and see how that improves things.
+
+\begin{center}\includegraphics{paper_files/figure-latex/plot_raw-1} \end{center}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = late_tissue ~ early_lesion, data = compare.df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -52.281 -12.772   3.619  12.891  34.890 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  355.43275    1.03778 342.493   <2e-16 ***
+## early_lesion  -0.25440    0.02597  -9.797   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 17.13 on 573 degrees of freedom
+## Multiple R-squared:  0.1435, Adjusted R-squared:  0.142 
+## F-statistic: 95.99 on 1 and 573 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\hypertarget{when-we-correct-for-inter-site-differences-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}{%
+\section{When we correct for inter-site differences, how does early
+timepoint lesion predict late timepoint
+atropy?}\label{when-we-correct-for-inter-site-differences-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}}
+
+We see that the inter-site differences are a major source of variance,
+and simplying adding the site as a covariate improves the model
+dramatically, increasing the R2 from 0.142 to 0.67. The slopes look
+similar, but next, let's check that by adding interaction by site.
+
+\begin{center}\includegraphics{paper_files/figure-latex/plot_harm-1} \end{center}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = late_tissue ~ early_lesion + site, data = compare.df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -55.091  -5.995   0.557   6.921  39.743 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  364.46456    1.23410 295.329  < 2e-16 ***
+## early_lesion  -0.34628    0.01811 -19.118  < 2e-16 ***
+## siteJH         1.83884    1.57613   1.167    0.244    
+## siteMG         7.31254    1.58530   4.613 4.91e-06 ***
+## siteUI       -29.79024    1.56939 -18.982  < 2e-16 ***
+## siteUT        -2.12328    1.70710  -1.244    0.214    
+## siteYL       -19.88268    1.72524 -11.525  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 10.67 on 568 degrees of freedom
+## Multiple R-squared:  0.6705, Adjusted R-squared:  0.667 
+## F-statistic: 192.6 on 6 and 568 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\hypertarget{are-there-site-specific-rates-for-early-timepoint-lesion-predict-late-timepoint-atropy}{%
+\section{Are there site-specific rates for early timepoint lesion
+predict late timepoint
+atropy?}\label{are-there-site-specific-rates-for-early-timepoint-lesion-predict-late-timepoint-atropy}}
+
+When including the interaction term, the model doesn't improve in
+adjusted R2, and non of the interactions are significant, so we can
+safely say that all of the sites have a similar relationship between
+early timepoint lesion and late timepoint tissue volume.
+
+This analysis has only looked at whole brain tissue volume, so next we
+can look at hemisphere-specific effects.
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = late_tissue ~ early_lesion * site, data = compare.df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -55.024  -5.484   0.585   7.136  39.056 
+## 
+## Coefficients:
+##                       Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)         364.415551   1.635031 222.880  < 2e-16 ***
+## early_lesion         -0.343860   0.055887  -6.153 1.45e-09 ***
+## siteJH                1.712674   2.132548   0.803  0.42225    
+## siteMG                7.622637   2.524740   3.019  0.00265 ** 
+## siteUI              -29.905569   2.212063 -13.519  < 2e-16 ***
+## siteUT               -0.887384   2.405770  -0.369  0.71237    
+## siteYL              -21.857785   2.563642  -8.526  < 2e-16 ***
+## early_lesion:siteJH   0.009719   0.083045   0.117  0.90688    
+## early_lesion:siteMG  -0.008026   0.066435  -0.121  0.90389    
+## early_lesion:siteUI   0.005897   0.077768   0.076  0.93958    
+## early_lesion:siteUT  -0.031611   0.064526  -0.490  0.62440    
+## early_lesion:siteYL   0.066283   0.076229   0.870  0.38493    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 10.69 on 563 degrees of freedom
+## Multiple R-squared:  0.6721, Adjusted R-squared:  0.6657 
+## F-statistic: 104.9 on 11 and 563 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\newpage
+
+\hypertarget{looking-at-only-the-isilateral-hemisphere-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}{%
+\section{Looking at only the isilateral hemisphere, how does early
+timepoint lesion predict late timepoint
+atropy?}\label{looking-at-only-the-isilateral-hemisphere-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}}
+
+Looking first at the hemisphere ipsilateral to the lesion, we found a
+similar trend, but with an increased R2. What about again controlling
+for inter-site differences?
+
+\begin{center}\includegraphics{paper_files/figure-latex/plot_raw_ipsi-1} \end{center}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = late_midline_right ~ early_lesion, data = compare.df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -32.244  -7.250   1.983   7.346  23.821 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  175.62968    0.61813  284.13   <2e-16 ***
+## early_lesion  -0.28681    0.01547  -18.55   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 10.2 on 573 degrees of freedom
+## Multiple R-squared:  0.3751, Adjusted R-squared:  0.374 
+## F-statistic: 343.9 on 1 and 573 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\hypertarget{looking-at-only-the-isilateral-hemisphere-and-controlling-for-inter-site-differences-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}{%
+\section{Looking at only the isilateral hemisphere and controlling for
+inter-site differences, how does early timepoint lesion predict late
+timepoint
+atropy?}\label{looking-at-only-the-isilateral-hemisphere-and-controlling-for-inter-site-differences-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}}
+
+Again, we find that inter-site differences in brain volume are a major
+contributor to the variance, but a covariate can control this quite
+well. The overall R2 has increased from 0.67 to 0.73. Next, let's look
+at the side contralateral to the lesion.
+
+\begin{center}\includegraphics{paper_files/figure-latex/plot_harm_ipsi-1} \end{center}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = late_midline_right ~ early_lesion + site, data = compare.df)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -28.2656  -3.8442   0.6073   4.3746  26.4073 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  178.87772    0.78453 228.006  < 2e-16 ***
+## early_lesion  -0.33811    0.01151 -29.364  < 2e-16 ***
+## siteJH         4.00788    1.00197   4.000 7.17e-05 ***
+## siteMG         6.32060    1.00779   6.272 7.08e-10 ***
+## siteUI       -14.63910    0.99768 -14.673  < 2e-16 ***
+## siteUT         0.34392    1.08523   0.317    0.751    
+## siteYL        -9.75872    1.09676  -8.898  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 6.784 on 568 degrees of freedom
+## Multiple R-squared:  0.7262, Adjusted R-squared:  0.7233 
+## F-statistic:   251 on 6 and 568 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\hypertarget{looking-at-only-the-contralateral-hemisphere-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}{%
+\section{Looking at only the contralateral hemisphere, how does early
+timepoint lesion predict late timepoint
+atropy?}\label{looking-at-only-the-contralateral-hemisphere-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}}
+
+When looking at tissue volume on the hemisphere contralateral to the
+lesion, we see that there is now no relation relationship between early
+timepoint lesion volume and late timepoint tissue volume, suggesting
+that the atrophy is localized to the ispilateral side.
+
+\begin{center}\includegraphics{paper_files/figure-latex/plot_raw_contra-1} \end{center}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = late_midline_left ~ early_lesion, data = compare.df)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -30.365  -5.401   1.665   5.752  17.616 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  179.80305    0.47901 375.368  < 2e-16 ***
+## early_lesion   0.03241    0.01198   2.704  0.00705 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 7.906 on 573 degrees of freedom
+## Multiple R-squared:  0.0126, Adjusted R-squared:  0.01088 
+## F-statistic: 7.314 on 1 and 573 DF,  p-value: 0.007046
+\end{verbatim}
+
+\hypertarget{looking-at-only-the-contralateral-hemisphere-and-controlling-for-inter-site-differences-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}{%
+\section{Looking at only the contralateral hemisphere and controlling
+for inter-site differences, how does early timepoint lesion predict late
+timepoint
+atropy?}\label{looking-at-only-the-contralateral-hemisphere-and-controlling-for-inter-site-differences-how-does-early-timepoint-lesion-predict-late-timepoint-atropy}}
+
+We further confirm this finding by including a covariate for site.
+
+\begin{center}\includegraphics{paper_files/figure-latex/plot_harm_contra-1} \end{center}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = late_midline_left ~ early_lesion + site, data = compare.df)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -29.4504  -2.8263   0.5203   3.3026  13.6411 
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  185.586878   0.610114 304.184  < 2e-16 ***
+## early_lesion  -0.008170   0.008955  -0.912  0.36197    
+## siteJH        -2.169126   0.779211  -2.784  0.00555 ** 
+## siteMG         0.991845   0.783741   1.266  0.20620    
+## siteUI       -15.151247   0.775877 -19.528  < 2e-16 ***
+## siteUT        -2.467289   0.843961  -2.923  0.00360 ** 
+## siteYL       -10.123997   0.852926 -11.870  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 5.276 on 568 degrees of freedom
+## Multiple R-squared:  0.5642, Adjusted R-squared:  0.5596 
+## F-statistic: 122.6 on 6 and 568 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\end{document}
