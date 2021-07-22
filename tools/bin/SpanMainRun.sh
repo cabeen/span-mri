@@ -110,7 +110,7 @@ if [ -e native.convert ] && [ ! -e native.import ]; then
   runit bash ${workflow}/SpanAuxImport.sh native.convert ${tmp}
 
   for c in ${flips}; do
-    for v in adc rare t2; do
+    for v in adc t2; do
       echo "  correcting ${v} with ${c}"
       runit mv ${tmp}/${v}.nii.gz ${tmp}/${v}.raw.nii.gz
       runit ${qitcmd} VolumeReorder \
@@ -129,7 +129,7 @@ if [ ! -e native.denoise ]; then
   tmp=native.denoise.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-  for p in adc t2 rare; do
+  for p in adc t2; do
     runit bash ${workflow}/SpanAuxDenoise.sh \
 			 native.import/${p}.nii.gz  ${tmp}/${p}.nii.gz
   done
@@ -170,7 +170,6 @@ if [ ! -e native.fit ]; then
 			--report ${tmp}/${m}_report.csv
   done
 
-	cp native.denoise/rare.nii.gz ${tmp}/rare.nii.gz
   mv ${tmp} native.fit
 
 fi
@@ -192,7 +191,7 @@ if [ ! -e native.harm ]; then
   tmp=native.harm.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-  for p in {adc,t2}_{base,rate} rare; do
+  for p in {adc,t2}_{base,rate}; do
     runit ${qitcmd} VolumeHarmonize \
       --input native.fit/${p}.nii.gz \
       --inputStatMask native.mask/brain.mask.nii.gz \
@@ -235,7 +234,7 @@ for p in fit harm; do
 		tmp=standard.${p}.tmp.${RANDOM}
 		mkdir -p ${tmp}
 
-		for m in {t2,adc}_{base,rate} rare; do
+		for m in {t2,adc}_{base,rate}; do
 
 			runit ${qitcmd} VolumeTransform \
 				--input native.${p}/${m}.nii.gz \
@@ -382,7 +381,7 @@ if [ ! -e standard.vis ]; then
     --output ${tmp}/anatomy.nii.gz
 
   for labels in anatomy brain lesion csf rois; do 
-    for param in rare {adc,t2}_{rate,base}; do
+    for param in {adc,t2}_{rate,base}; do
       visit standard.harm/${param}.nii.gz ${param} ${labels} ${tmp}
     done
   done

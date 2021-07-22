@@ -121,7 +121,7 @@ for sdir in ${input}/*/*; do
 		site=$(cat ${sdir}/native.import/site.txt)
 		date=$(cat ${sdir}/native.import/date.txt)
 
-		for contrast in rare {adc,t2}_{rate,base}; do
+		for contrast in {adc,t2}_{rate,base}; do
 		  for vis in anatomy brain lesion csf rois; do
 		    infn=${input}/${tp}/${sid}/standard.vis/${contrast}_${vis}.png
 		    if [ -e ${infn} ]; then
