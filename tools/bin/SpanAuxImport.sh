@@ -49,7 +49,7 @@ cp ${workflow}/params/Common/$(basename $(cd ${input} && cd ../.. && pwd)).txt $
 cat ${input}/images.csv | awk -vcol=DicomAcquisitionDate 'BEGIN{FS=","}(NR==1){colnum=-1;for(i=1;i<=NF;i++)if($(i)==col)colnum=i;}{print $(colnum)}' | tail -n 1 > ${output}/date.txt
 
 rare="$(find ${nifti} \( -path '*RARE*.nii.gz' -or -path '*T2_anatomy*.nii.gz' \) -print -quit)"
-if [ ! -e ${output}/rare.nii.gz ] && [ -e ${rare} ]; then
+if [ ! -e ${output}/rare.nii.gz ] && [ -e ${rare} ] && [ "${rare}" != "" ]; then
   echo "  using rare:"
   echo "${rare}"
 	echo "  organizing rare"
