@@ -9,13 +9,11 @@
 
 from common import *
 
-root=abspath(join(dirname(args[0]), pardir, "data"))
-
 def main():
     if len(args) == 1:
         print("Usage:")
         print("")
-        print("  qit %s brain.mask.nii.gz tissue.mask.nii.gz csf.mask.nii.gz output" % basename(args[0]))
+        print("  qit %s brain.mask.nii.gz tissue.mask.nii.gz csf.mask.nii.gz middle.mask.nii.gz output" % basename(args[0]))
         print("")
         print("Description:")
         print("")
@@ -28,7 +26,8 @@ def main():
     brain_mask_fn = args[1]
     tissue_mask_fn = args[2]
     csf_mask_fn = args[3]
-    output_dn = args[4]
+    middle_mask_fn = args[4]
+    output_dn = args[5]
 
     tmp_dn = "%s.tmp.%d" % (output_dn, int(time()))
     makedirs(tmp_dn)
@@ -36,6 +35,7 @@ def main():
     Logging.info("using brain: %s" % brain_mask_fn)
     Logging.info("using tissue: %s" % tissue_mask_fn)
     Logging.info("using csf: %s" % csf_mask_fn)
+    Logging.info("using middle: %s" % middle_mask_fn)
     Logging.info("using output: %s" % output_dn)
     Logging.info("using tmp: %s" % tmp_dn)
 
@@ -47,10 +47,11 @@ def main():
     brain_mask = Mask.read(brain_mask_fn)
     tissue_mask = Mask.read(tissue_mask_fn)
     csf_mask = Mask.read(csf_mask_fn)
-    middle_mask = Mask.read(join(root, "middle.mask.nii.gz"))
+    middle_mask = Mask.read(middle_mask_fn)
 
     Logging.info("detecting landmarks")
 
+    # todo: update for rats
     xCenter = 7.42662
     xLeft = 2.49401
     xRight = 12.3626

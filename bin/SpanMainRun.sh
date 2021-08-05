@@ -305,16 +305,16 @@ if [ ! -e standard.seg ]; then
 
 fi
 
-if [ ! -e standard.midline ]; then
-
-	runit ${qitcmd} ${workflow}/SpanAuxMidline.py \
-    standard.mask/brain.mask.nii.gz \
-    standard.seg/tissue.mask.nii.gz \
-    standard.seg/csf.mask.nii.gz \
-    ${data}/${species}/middle.mask.nii.gz \
-    standard.midline
-
-fi
+# if [ ! -e standard.midline ]; then
+# 
+# 	runit ${qitcmd} ${workflow}/SpanAuxMidline.py \
+#     standard.mask/brain.mask.nii.gz \
+#     standard.seg/tissue.mask.nii.gz \
+#     standard.seg/csf.mask.nii.gz \
+#     ${data}/${species}/middle.mask.nii.gz \
+#     standard.midline
+# 
+# fi
 
 if [ ! -e standard.map ]; then
   tmp=standard.map.tmp.${RANDOM}
@@ -324,7 +324,7 @@ if [ ! -e standard.map ]; then
     cp native.fit/${f}_report.csv ${tmp}/${f}_qa.csv
   done
 
-  cp standard.midline/map.csv ${tmp}/midline.csv
+  # cp standard.midline/map.csv ${tmp}/midline.csv
 
   runit ${qitcmd} MaskRegionsMeasure \
     --regions standard.seg/rois.nii.gz \
