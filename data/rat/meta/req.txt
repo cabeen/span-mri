@@ -1,0 +1,6 @@
+brain.nii.gz
+brain.nii.gz
+restrict.mask.nii.gz
+lesion.mask.nii.gz
+regions.nii.gz
+lesion.regions.csv
