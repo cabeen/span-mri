@@ -17,7 +17,13 @@ Description:
     
 Usage: 
 
-  $(basename $0) [--source <dicom_dir>] [--correct <correct_dir>] --subject subject_dir
+  $(basename $0) [options} --subject subject_dir
+
+Optional Parameters:
+
+  --source <dicom_dir>: the input dicom directory (required on the first run)
+  --species <mouse|rat>: the species of the case (default=mouse)
+  --correct <correct_dir>: the correction directory (advanced)
 
 Author: Ryan Cabeen
 "
@@ -48,6 +54,7 @@ workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
 qitcmd="qit --verbose --debug"
 
+species="mouse"
 source=""
 correct=""
 subject=""
@@ -58,6 +65,7 @@ while [ "$1" != "" ]; do
         --source)                  shift; source=$1 ;;
         --correct)                 shift; correct=$1 ;;
         --subject)                 shift; subject=$1 ;;
+        --species)                 shift; species=$1 ;;
         --help )                   usage ;;
         * )                        posit="${posit} $1" ;;
     esac
@@ -94,6 +102,7 @@ done
 
 cd ${subject}
 echo "  using subject: ${PWD}"
+echo "  using species: ${species}"
 check native.dicom
 
 if [ -e native.dicom ] && [ ! -e native.convert ]; then
@@ -179,8 +188,14 @@ if [ ! -e native.mask/brain.mask.nii.gz ]; then
   tmp=native.mask.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-  runit bash ${workflow}/SpanAuxSegmentBrainLearn.sh \
-    native.fit ${tmp}/brain.mask.nii.gz
+  # We only have a deep learning brain extractor for mice
+  if [ ${species} == "mouse" ]; then
+		runit bash ${workflow}/SpanAuxSegmentBrainLearn.sh \
+			native.fit ${tmp}/brain.mask.nii.gz
+  else
+		runit bash ${workflow}/SpanAuxSegmentBrainRule.sh \
+			native.fit ${tmp}/brain.mask.nii.gz
+  fi
 
   mv ${tmp} native.mask
 
@@ -217,7 +232,7 @@ if [ ! -e native.reg ]; then
 	runit ${qitcmd} VolumeRegisterLinearAnts \
 		--rigid \
 		--input ${tmp}/native.nii.gz \
-		--ref ${data}/brain.nii.gz \
+		--ref ${data}/${species}/brain.nii.gz \
 		--output ${tmp}/work
 
 	mv ${tmp}/work/* ${tmp}
@@ -239,7 +254,7 @@ for p in fit harm; do
 			runit ${qitcmd} VolumeTransform \
 				--input native.${p}/${m}.nii.gz \
 				--affine native.reg/xfm.txt \
-				--reference ${data}/brain.nii.gz \
+				--reference ${data}/${species}/brain.nii.gz \
 				--output ${tmp}/${m}.nii.gz 
 
 		done
@@ -257,7 +272,7 @@ if [ ! -e standard.mask ]; then
 	runit ${qitcmd} MaskTransform \
 		--input native.mask/brain.mask.nii.gz \
 		--affine native.reg/xfm.txt \
-		--reference ${data}/brain.nii.gz \
+		--reference ${data}/${species}/brain.nii.gz \
 		--output ${tmp}/raw.mask.nii.gz
 
 	runit ${qitcmd} MaskFilterMode \
@@ -266,7 +281,7 @@ if [ ! -e standard.mask ]; then
 
 	runit ${qitcmd} MaskIntersection \
 		--left ${tmp}/filter.mask.nii.gz \
-		--right ${data}/restrict.mask.nii.gz \
+		--right ${data}/${species}/restrict.mask.nii.gz \
 		--output ${tmp}/brain.mask.nii.gz
 
   mv ${tmp} standard.mask
@@ -278,14 +293,15 @@ if [ ! -e standard.seg ]; then
   runit bash ${workflow}/SpanAuxSegmentLesion.sh \
      --input standard.harm \
      --mask standard.mask/brain.mask.nii.gz \
-     --prior ${data}/lesion.mask.nii.gz \
+     --prior ${data}/${species}/lesion.mask.nii.gz \
      --output standard.seg
 
   runit ${qitcmd} MaskIntersection \
-     --left ${data}/regions.nii.gz \
+     --left ${data}/${species}/regions.nii.gz \
      --right standard.seg/lesion.mask.nii.gz \
      --output standard.seg/lesion.regions.nii.gz
-  runit cp ${data}/lesion.regions.csv standard.seg/lesion.regions.csv
+  runit cp ${data}/${species}/lesion.regions.csv \
+     standard.seg/lesion.regions.csv
 
 fi
 
