@@ -1,8 +1,0 @@
-
-Avoid EPI in SPAN
-
-Hypertensive rats have tissue abnormalities with high-T2/low-R2, but moderate
-ADC, look out for this
-
-SHR: Spontaneously Hypertensive Rats
-https://en.wikipedia.org/wiki/Spontaneously_hypertensive_rat

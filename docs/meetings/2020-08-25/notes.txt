@@ -1,7 +1,0 @@
-From UIowa: Do comparison of two T2 mapping scans.  Split each case in two and run through pipeline
-
-October 5th target start date for main study, at least 4 pages should work
-
-New site:
-http://spannetwork.org/
-
