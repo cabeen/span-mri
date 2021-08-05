@@ -108,6 +108,20 @@ qit TableSelect \
   --sort site,subject,timepoint \
   --output ${output}/table.wide.csv
 
+qit TableMath \
+  --input ${output}/table.wide.csv \
+  --expression "volume_csf + volume_tissue + volume_lesion" \
+  --result "volume_total" \
+  --output ${output}/table.wide.csv
+
+for x in csf tissue lesion; do
+  qit TableMath \
+    --input ${output}/table.wide.csv \
+    --expression "volume_${x} / volume_total" \
+    --result "fraction_${x}" \
+    --output ${output}/table.wide.csv
+done
+
 echo "  making metadata" 
 python ${mybin}/SpanAuxSummarize.py \
   --input ${input} --output ${output}/tables/metadata.csv

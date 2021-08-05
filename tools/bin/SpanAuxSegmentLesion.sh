@@ -46,17 +46,17 @@ workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
 
 t2RateThreshLesion=0.80
-adcRateThreshLesion=1.25
+adcRateThreshLesion=1.5
 adcBaseThreshLesion=0.25
 sigmoidHighThreshLesion=0.5
 sigmoidLowThreshLesion=0.45
 
 numErodeBrain=1
 numOpenLesion=2
-numDilateLesion=1
+numDilateLesion=2
 
-t2RateThreshCsf=0.65
-adcRateThreshCsf=1.65
+t2RateThreshCsf=0.75
+adcRateThreshCsf=1.25
 sigmoidThreshCsf=0.5
 
 input=""
@@ -135,13 +135,14 @@ runit qit --verbose VolumeVoxelMathScalar \
 	--expression "a*b*c" \
 	--output ${tmp}/lesion.rawprob.nii.gz
 
-#runit qit --verbose VolumeFilterMedian \
-#	--input ${tmp}/lesion.rawprob.nii.gz \
-#	--output ${tmp}/lesion.medprob.nii.gz
+runit qit --verbose VolumeFilterMedian \
+	--input ${tmp}/lesion.rawprob.nii.gz \
+	--output ${tmp}/lesion.medprob.nii.gz
 
-cp ${tmp}/lesion.rawprob.nii.gz \
-   ${tmp}/lesion.medprob.nii.gz
-
+# runit cp \
+#   ${tmp}/lesion.rawprob.nii.gz \
+#   ${tmp}/lesion.medprob.nii.gz
+ 
 runit qit --verbose VolumeThreshold \
 	--input ${tmp}/lesion.medprob.nii.gz \
 	--threshold ${sigmoidHighThreshLesion} \

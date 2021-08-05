@@ -11,16 +11,17 @@
 
 mybin=$(cd $(dirname ${0}); pwd -P)
 
-for s in source/*/*; do 
-  subd=$(echo ${s} | sed 's/source/process/g')
-  logd=$(echo ${s} | sed 's/source/log/g') 
+for s in staging/*/*; do 
+  subd=$(echo ${s} | sed 's/staging/process/g')
+  cord=$(echo ${s} | sed 's/staging/correct/g')
+  logd=${subd}/log
 
-  if [ ! -e ${subd}/standard.vis ] || [ ! -e ${subd}/standard.map ]; then
+  echo ${subd}
+
+  if [ ! -e ${subd}/standard.vis ]; then
     mkdir -p ${logd}
     qsubcmd --qlog ${logd} bash ${mybin}/SpanMainRun.sh \
-      --source  ${s} \
-      --correct $(echo ${s} | sed 's/source/correct/g') \
-      --subject $(echo ${s} | sed 's/source/process/g')
+      --source  ${s} --correct ${cord} --subject ${subd}
   fi
 done
 
