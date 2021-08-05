@@ -1,5 +1,5 @@
 brain.nii.gz
-brain.nii.gz
+middle.mask.nii.gz
 restrict.mask.nii.gz
 lesion.mask.nii.gz
 regions.nii.gz
