@@ -9,12 +9,10 @@
 #
 ##############################################################################
 
-if [ $# -ne "3" ]; then
-    echo "Usage: $(basename $0) <brain-mask> <csf-mask> <output>"
+if [ $# -ne "4" ]; then
+    echo "Usage: $(basename $0) <brain-mask> <csf-mask> <middle-mask> <output>"
     exit 1
 fi
-
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
 
 function runit
 {
@@ -30,10 +28,12 @@ echo "started"
 
 brain=$1
 csf=$2
-output=$3
+middle=$3
+output=$4
 
 if [ ! -e ${brain} ]; then echo "Error: brain mask not found: ${brain}"; exit; fi
 if [ ! -e ${csf} ]; then echo "Error: csf mask not found: ${csf}"; exit; fi
+if [ ! -e ${middle} ]; then echo "Error: middle mask not found: ${middle}"; exit; fi
 
 tmp=${output}.tmp.${RANDOM}
 mkdir -p ${tmp}
@@ -41,12 +41,13 @@ mkdir -p ${tmp}/seg
 
 echo "using brain: ${brain}"
 echo "using csf: ${csf}"
+echo "using middle: ${middle}"
 echo "using output: ${output}"
 echo "using intermediate: ${tmp}"
 
 runit qit --verbose MaskCentroids \
   --input ${csf} \
-  --mask ${root}/data/middle.mask.nii.gz \
+  --mask ${middle} \
   --largest \
   --output ${tmp}/centroid.txt
 
