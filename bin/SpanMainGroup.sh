@@ -122,6 +122,53 @@ for x in csf tissue lesion; do
     --output ${output}/table.wide.csv
 done
 
+qit TableMath \
+  --input ${output}/table.wide.csv \
+  --expression "volume_lesion + volume_csf + volume_tissue" \
+  --result volume_total \
+  --output ${output}/table.wide.csv
+
+qit TableStats \
+  --input ${output}/table.wide.csv \
+  --value volume_total \
+  --which mean \
+  --output ${output}/tmp.csv
+
+qit TableSelect \
+  --input ${output}/table.wide.csv \
+  --output ${output}/table.wide.csv \
+  --constant global_volume_total=$(tail -n 1 ${output}/tmp.csv)
+
+rm ${output}/tmp.csv
+
+qit TableStats \
+  --input ${output}/table.wide.csv \
+  --value volume_total \
+  --group site \
+  --which mean \
+  --output ${output}/tmp.csv
+
+qit TableSelect \
+  --rename mean_volume_total=mean \
+  --input ${output}/tmp.csv \
+  --output ${output}/tmp.csv
+
+qit TableMerge \
+  --field site \
+  --left ${output}/table.wide.csv \
+  --right ${output}/tmp.csv \
+  --output ${output}/table.wide.csv
+
+rm ${output}/tmp.csv
+
+for x in lesion csf tissue total; do
+  qit TableMath \
+    --input ${output}/table.wide.csv \
+    --expression "global_volume_total * volume_${x} / mean_volume_total" \
+    --result normalized_volume_${x} \
+    --output ${output}/table.wide.csv
+done
+
 echo "  making metadata" 
 python ${mybin}/SpanAuxSummarize.py \
   --input ${input} --output ${output}/tables/metadata.csv

@@ -13,7 +13,7 @@ def main():
     if len(args) == 1:
         print("Usage:")
         print("")
-        print("  qit %s brain.mask.nii.gz tissue.mask.nii.gz csf.mask.nii.gz middle.mask.nii.gz output" % basename(args[0]))
+        print("  qit %s brain.mask.nii.gz tissue.mask.nii.gz csf.mask.nii.gz atlas_dir output" % basename(args[0]))
         print("")
         print("Description:")
         print("")
@@ -26,7 +26,8 @@ def main():
     brain_mask_fn = args[1]
     tissue_mask_fn = args[2]
     csf_mask_fn = args[3]
-    middle_mask_fn = args[4]
+    middle_mask_fn = join(args[4], "middle.mask.nii.gz")
+    lm_fn = join(args[4], "lm.txt")
     output_dn = args[5]
 
     tmp_dn = "%s.tmp.%d" % (output_dn, int(time()))
@@ -49,21 +50,14 @@ def main():
     csf_mask = Mask.read(csf_mask_fn)
     middle_mask = Mask.read(middle_mask_fn)
 
-    Logging.info("detecting landmarks")
-
-    # todo: update for rats
-    xCenter = 7.42662
-    xLeft = 2.49401
-    xRight = 12.3626
-    yAnterior = 11.8 
-    yPosterior = 3.15 
-    zCenter = 8.10
-    zSuperior = 11.0
-    zInferior = 5.2
+    Logging.info("loading landmarks")
+    lms = [float(x) for x in open(lm_fn, "r").read().split()]
+    xCenter, xLeft, xRight, yAnt, yPost, zCenter, zSup, zInf = lms
+    thresh = (xRight - xLeft) / 658
+    # with mouse voxel size = 0.00159387, this corresponds to more than 9 voxels
 
     region_mask = MaskUtils.and(csf_mask, middle_mask)
-    region_mask = MaskUtils.greater(region_mask, 0.015)
-    # with voxel size = 0.00159387, this corresponds to more than 9 voxels
+    region_mask = MaskUtils.greater(region_mask, thresh)
     region_mask = MaskHull.apply(region_mask)
     centroids = MaskCentroids.apply(region_mask)
 
@@ -100,10 +94,10 @@ def main():
 
         shift = VectSource.create3D(x, y, zCenter)
         center = VectSource.create3D(xCenter, y, zCenter)
-        superior = VectSource.create3D(xCenter, y, zSuperior)
-        inferior = VectSource.create3D(xCenter, y, zInferior)
-        anterior = VectSource.create3D(xCenter, yAnterior, zCenter)
-        posterior = VectSource.create3D(xCenter, yPosterior, zCenter)
+        superior = VectSource.create3D(xCenter, y, zSup)
+        inferior = VectSource.create3D(xCenter, y, zInf)
+        anterior = VectSource.create3D(xCenter, yAnt, zCenter)
+        posterior = VectSource.create3D(xCenter, yPost, zCenter)
 
         sampling = brain_mask.getSampling()
         sample = sampling.nearest(shift)
