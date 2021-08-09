@@ -17,13 +17,13 @@ Description:
     
 Usage: 
 
-  $(basename $0) [options} --subject subject_dir
+  $(basename $0) [options} --case case_dir
 
 Optional Parameters:
 
-  --source <dicom_dir>: the input dicom directory (required on the first run)
-  --species <mouse|rat>: the species of the case (default=mouse)
-  --correct <correct_dir>: the correction directory (advanced)
+  --source <dicom_dir>: specify the input dicom directory (required first time)
+  --species <mouse|rat>: specify the species of the case (default=auto)
+  --correct <correct_dir>: specify the correction directory (advanced)
 
 Author: Ryan Cabeen
 "
@@ -54,17 +54,17 @@ workflow="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 name=$(basename $0)
 qitcmd="qit --verbose --debug"
 
-species="mouse"
+species=""
 source=""
 correct=""
-subject=""
+case=""
 posit=""
 
 while [ "$1" != "" ]; do
     case $1 in
         --source)                  shift; source=$1 ;;
         --correct)                 shift; correct=$1 ;;
-        --subject)                 shift; subject=$1 ;;
+        --case)                 shift; case=$1 ;;
         --species)                 shift; species=$1 ;;
         --help )                   usage ;;
         * )                        posit="${posit} $1" ;;
@@ -73,7 +73,18 @@ while [ "$1" != "" ]; do
 done
 
 if [ $(echo ${posit} | wc -w) -ne 0 ]; then echo "unexpected positional arguments: ${posit}"; usage; fi
-if [ ""${subject} == "" ]; then echo "no subject provided"; usage; fi
+if [ ""${case} == "" ]; then echo "no case provided"; usage; fi
+
+if [[ "${species}" == "" ]]; then
+  abscase="$(cd "$(dirname ${case})" && pwd)/$(basename ${case})"
+  echo "  detecting species from case path"
+  if [[ "${case}" == *rat* ]]; then species="rat"; fi
+  if [[ "${case}" == *mouse* ]]; then species="mouse"; fi
+  if [[ "${species}" == "" ]]; then
+    echo "  no species detected, defaulting to mouse"
+    species="mouse"
+  fi
+fi
 
 ##############################################################################
 # Processing 
@@ -82,14 +93,14 @@ if [ ""${subject} == "" ]; then echo "no subject provided"; usage; fi
 echo "started ${name}"
 
 if [ ""${source} != "" ]; then
-  if [ ! -e ${subject}/native.dicom ]; then
+  if [ ! -e ${case}/native.dicom ]; then
     echo "  using source: ${source}"
-    mkdir -p ${subject}
-	  tmp=${subject}/native.dicom.tmp.${RANDOM}
+    mkdir -p ${case}
+	  tmp=${case}/native.dicom.tmp.${RANDOM}
     cp -r ${source} ${tmp}
     chmod -R u+w ${tmp}
 	  runit bash ${workflow}/SpanAuxDicomFix.sh ${tmp}
-    mv ${tmp} ${subject}/native.dicom
+    mv ${tmp} ${case}/native.dicom
   fi
 fi
 
@@ -100,8 +111,8 @@ for c in flipi flipj flipk; do
   fi
 done
 
-cd ${subject}
-echo "  using subject: ${PWD}"
+cd ${case}
+echo "  using case: ${PWD}"
 echo "  using species: ${species}"
 check native.dicom
 
@@ -305,16 +316,16 @@ if [ ! -e standard.seg ]; then
 
 fi
 
-# if [ ! -e standard.midline ]; then
-# 
-# 	runit ${qitcmd} ${workflow}/SpanAuxMidline.py \
-#     standard.mask/brain.mask.nii.gz \
-#     standard.seg/tissue.mask.nii.gz \
-#     standard.seg/csf.mask.nii.gz \
-#     ${data}/${species}/middle.mask.nii.gz \
-#     standard.midline
-# 
-# fi
+if [ ! -e standard.midline ]; then
+
+	runit ${qitcmd} ${workflow}/SpanAuxMidline.py \
+    standard.mask/brain.mask.nii.gz \
+    standard.seg/tissue.mask.nii.gz \
+    standard.seg/csf.mask.nii.gz \
+    ${data}/${species}/middle.mask.nii.gz \
+    standard.midline
+
+fi
 
 if [ ! -e standard.map ]; then
   tmp=standard.map.tmp.${RANDOM}
