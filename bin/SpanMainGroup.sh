@@ -38,7 +38,7 @@ echo "  making tables"
 rm -rf ${output}/sids.txt
 
 echo "  ... collecting subject list" 
-for sdir in ${input}/*/*; do
+for sdir in ${input}/*/*/*; do
   if [ -e ${sdir}/standard.vis ]; then
 		sid=$(basename ${sdir})
 		echo ${sid} 
@@ -49,23 +49,24 @@ cat ${output}/sids.txt | sort | uniq > ${output}/tmp \
   && mv ${output}/tmp ${output}/sids.txt
 
 echo "  ... collecting scan data" 
-echo "subject,site,date,timepoint,uid" > ${output}/tables/meta.csv
-for sdir in ${input}/*/*; do
+echo "subject,species,site,date,timepoint,uid" > ${output}/tables/meta.csv
+for sdir in ${input}/*/*/*; do
   if [ -e ${sdir}/standard.vis ]; then
 		sid=$(basename ${sdir})
 		tp=$(basename $(dirname ${sdir}))
+		species=$(basename $(dirname $(dirname ${sdir})))
 		site=$(cat ${sdir}/native.import/site.txt)
 		date=$(cat ${sdir}/native.import/date.txt)
 
-		echo "${sid},${site},${date},${tp},${sid}_${tp}"
+		echo "${sid},${species},${site},${date},${tp},${sid}_${tp}"
   fi
 done >> ${output}/tables/meta.csv
 
 
 echo "  ... grouping tables" 
 qit --verbose MapCat \
-  --pattern ${input}/%{timepoint}/%{subject}/standard.map/%{metric}.csv \
-  --vars timepoint=early,late subject=${output}/sids.txt metric=midline,adc_qa,adc_base_mean,adc_base_harm_mean,adc_rate_mean,adc_rate_harm_mean,adc_rate_std,adc_rate_harm_std,t2_base_mean,t2_base_harm_mean,t2_rate_mean,t2_rate_harm_mean,t2_rate_std,t2_rate_harm_std,t2_qa,conf_mean,volume,regions \
+  --pattern ${input}/%{species}/%{timepoint}/%{subject}/standard.map/%{metric}.csv \
+  --vars species=rat,mouse timepoint=early,late subject=${output}/sids.txt metric=midline,adc_qa,adc_base_mean,adc_base_harm_mean,adc_rate_mean,adc_rate_harm_mean,adc_rate_std,adc_rate_harm_std,t2_base_mean,t2_base_harm_mean,t2_rate_mean,t2_rate_harm_mean,t2_rate_std,t2_rate_harm_std,t2_qa,conf_mean,volume,regions \
   --skip \
   --output ${output}/tables/metrics.csv
 
@@ -174,19 +175,20 @@ python ${mybin}/SpanAuxSummarize.py \
   --input ${input} --output ${output}/tables/metadata.csv
 
 echo "  making vis" 
-for sdir in ${input}/*/*; do
+for sdir in ${input}/*/*/*; do
   echo "  ... ${sdir}"
   if [ -e ${sdir}/standard.vis ]; then
 		sid=$(basename ${sdir})
 		tp=$(basename $(dirname ${sdir}))
+		species=$(basename $(dirname $(dirname ${sdir})))
 		site=$(cat ${sdir}/native.import/site.txt)
 		date=$(cat ${sdir}/native.import/date.txt)
 
 		for contrast in {adc,t2}_{rate,base}; do
 		  for vis in anatomy brain lesion csf rois; do
-		    infn=${input}/${tp}/${sid}/standard.vis/${contrast}_${vis}.png
+		    infn=${input}/${species}/${tp}/${sid}/standard.vis/${contrast}_${vis}.png
 		    if [ -e ${infn} ]; then
-		       ln ${infn} ${output}/vis/${site}_${sid}_${tp}_${contrast}_${vis}.png
+		       ln ${infn} ${output}/vis/${species}_${site}_${sid}_${tp}_${contrast}_${vis}.png
 		    fi
 		  done
 		done
