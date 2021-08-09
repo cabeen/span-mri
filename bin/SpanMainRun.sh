@@ -322,7 +322,7 @@ if [ ! -e standard.midline ]; then
     standard.mask/brain.mask.nii.gz \
     standard.seg/tissue.mask.nii.gz \
     standard.seg/csf.mask.nii.gz \
-    ${data}/${species}/middle.mask.nii.gz \
+    ${data}/${species} \
     standard.midline
 
 fi
