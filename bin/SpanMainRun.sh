@@ -328,6 +328,7 @@ if [ ! -e standard.midline ]; then
 fi
 
 if [ ! -e standard.map ]; then
+
   tmp=standard.map.tmp.${RANDOM}
   mkdir -p ${tmp}
 
@@ -335,7 +336,7 @@ if [ ! -e standard.map ]; then
     cp native.fit/${f}_report.csv ${tmp}/${f}_qa.csv
   done
 
-  # cp standard.midline/map.csv ${tmp}/midline.csv
+  cp standard.midline/map.csv ${tmp}/midline.csv
 
   runit ${qitcmd} MaskRegionsMeasure \
     --regions standard.seg/rois.nii.gz \
@@ -362,6 +363,7 @@ if [ ! -e standard.map ]; then
     --output ${tmp}/regions.csv
 
   mv ${tmp} standard.map
+
 fi
 
 function visit 
