@@ -82,7 +82,8 @@ qit TableMerge \
   --field uid \
   --output ${output}/table.csv
 
-qit TableSelect --cat measure=%{metric}_%{name} \
+qit TableSelect \
+  --cat measure=%{metric}_%{name} \
   --input ${output}/table.csv \
   --output ${output}/table.wide.csv
 
@@ -94,14 +95,15 @@ qit TableSelect \
 qit TableWiden \
   --input ${output}/table.wide.csv \
   --na 0 \
-  --name measure --output ${output}/table.wide.csv
+  --name measure \
+  --output ${output}/table.wide.csv
 
 cat ${output}/table.wide.csv | sed 's/volume_volume/volume/g' > ${output}/tmp \
  && mv ${output}/tmp ${output}/table.wide.csv
 
 qit TableSelect \
   --input ${output}/table.wide.csv \
-  --retain subject,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr,midline_shift_percent,midline_shift_ratio,midline_shift_index,midline_shift_left,midline_shift_right,midline_tissue_volume_left,midline_tissue_volume_right,midline_tissue_volume_index,regions_volume_lesion_striatum,regions_volume_lesion_cortex,regions_volume_lesion_thalamus,regions_volume_lesion_hippocampus \
+  --retain subject,species,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr,midline_shift_percent,midline_shift_ratio,midline_shift_index,midline_shift_left,midline_shift_right,midline_tissue_volume_left,midline_tissue_volume_right,midline_tissue_volume_index,regions_volume_lesion_striatum,regions_volume_lesion_cortex,regions_volume_lesion_thalamus,regions_volume_lesion_hippocampus \
   --output ${output}/table.wide.csv
 
 qit TableSelect \
