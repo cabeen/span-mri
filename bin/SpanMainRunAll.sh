@@ -21,7 +21,7 @@ for s in staging/*/*; do
   if [ ! -e ${subd}/standard.vis ]; then
     mkdir -p ${logd}
     qsubcmd --qlog ${logd} bash ${mybin}/SpanMainRun.sh \
-      --source  ${s} --correct ${cord} --subject ${subd}
+      --source  ${s} --correct ${cord} --case ${subd}
   fi
 done
 
