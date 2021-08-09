@@ -4,3 +4,4 @@ restrict.mask.nii.gz
 lesion.mask.nii.gz
 regions.nii.gz
 lesion.regions.csv
+lm.txt
