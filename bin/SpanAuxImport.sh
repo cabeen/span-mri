@@ -86,9 +86,9 @@ if [ ! -e ${output}/adc.nii.gz ] && [ -e ${adc} ]; then
   fi
 fi
 
-t2map="$(find ${nifti} \( -path '*T2_map*.nii.gz' -or -path '*T2map*.nii.gz' -or -path '*T2MAP*.nii.gz' \) -print -quit)"
+t2map="$(find ${nifti} \( -path '*T2_SurfaceCoil*.nii.gz' -or -path '*T2_map*.nii.gz' -or -path '*T2map*.nii.gz' -or -path '*T2MAP*.nii.gz' \) -print -quit)"
 if [ ! -e ${output}/t2.nii.gz ] && [ -e ${at2map} ]; then
-  t2map="$(find ${nifti} \( -path '*T2_map*.nii.gz' -or -path '*T2map*.nii.gz' -or -path '*T2MAP*.nii.gz' \))"
+  t2map="$(find ${nifti} \( -path '*T2_SurfaceCoil*.nii.gz' -or -path '*T2_map*.nii.gz' -or -path '*T2map*.nii.gz' -or -path '*T2MAP*.nii.gz' \))"
 	echo "  using t2maps:"
 	echo "${t2map}"
 	echo "  organizing t2"
