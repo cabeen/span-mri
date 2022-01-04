@@ -119,8 +119,12 @@ def main():
         for v in [shift,center,left,right,superior,inferior,anterior,posterior]:
             landmarks.add(v)
 
-        shift_lat = shift.getX() - center.getX()
+        shift_x_estimate = shift.getX()
+        shift_x_center = center.getX()
+        shift_x_left = left.getX()
+        shift_x_right = right.getX()
         shift_mm = shift.dist(center)
+        shift_lat = shift.getX() - center.getX()
         shift_width = left.dist(right)
         shift_percent = 200 * shift_mm / shift_width
         shift_left = shift.dist(left)
@@ -128,16 +132,19 @@ def main():
         shift_min = min(shift_left, shift_right)
         shift_max = max(shift_left, shift_right)
         shift_ratio = shift_min / shift_max
-        shift_mean = (shift_right + shift_left) / 2.0
-        shift_index = (shift_right - shift_left) / shift_mean
+        shift_index = 2.0 * (shift_right - shift_left) / (shift_right - shift_left)
 
         hemis_mask = MaskUtils.split(tissue_mask, landmarks)
         vol_left = MaskUtils.volume(hemis_mask, 1)
         vol_right = MaskUtils.volume(hemis_mask, 2)
-        vol_index = 2.0 * (vol_left - vol_right) / (vol_left + vol_right)
+        vol_index = 2.0 * (vol_right - vol_left) / (vol_left + vol_right)
 
         f = open(join(tmp_dn, "map.csv"), 'w')
         f.write("name,value\n")
+        f.write("shift_x_estimate,%g\n" % shift_x_estimate)
+        f.write("shift_x_center,%g\n" % shift_x_center)
+        f.write("shift_x_left,%g\n" % shift_x_left)
+        f.write("shift_x_right,%g\n" % shift_x_right)
         f.write("shift_mm,%g\n" % shift_mm)
         f.write("shift_lat,%g\n" % shift_lat)
         f.write("shift_width,%g\n" % shift_width)
