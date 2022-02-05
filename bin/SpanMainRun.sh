@@ -64,7 +64,7 @@ while [ "$1" != "" ]; do
     case $1 in
         --source)                  shift; source=$1 ;;
         --correct)                 shift; correct=$1 ;;
-        --case)                 shift; case=$1 ;;
+        --case)                    shift; case=$1 ;;
         --species)                 shift; species=$1 ;;
         --help )                   usage ;;
         * )                        posit="${posit} $1" ;;
