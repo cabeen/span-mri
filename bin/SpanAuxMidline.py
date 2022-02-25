@@ -132,7 +132,7 @@ def main():
         shift_min = min(shift_left, shift_right)
         shift_max = max(shift_left, shift_right)
         shift_ratio = shift_min / shift_max
-        shift_index = 2.0 * (shift_right - shift_left) / (shift_right - shift_left)
+        shift_index = 2.0 * (shift_right - shift_left) / (shift_right + shift_left)
 
         hemis_mask = MaskUtils.split(tissue_mask, landmarks)
         vol_left = MaskUtils.volume(hemis_mask, 1)
