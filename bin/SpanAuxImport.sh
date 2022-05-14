@@ -73,7 +73,7 @@ if [ ! -e ${output}/adc.nii.gz ] && [ -e ${adc} ]; then
     --input ${adc} --output-cat ${output}/adc.nii.gz
   runit qit VolumeSortChannels --reverse \
     --input ${output}/adc.nii.gz --output ${output}/adc.nii.gz
-  runit cp ${params}/adc.txt ${output}/adc.txt
+  runit cp ${workflow}/params/Common/adc.txt ${output}/adc.txt
 
   if [ ! ${ref} ]; then 
      runit qit --load ${workflow}/params/Common/resample.json \
