@@ -89,10 +89,16 @@ qit TableMerge \
 
 rm ${output}.tmp.csv
 
+qit TableMath \
+	--input ${output} \
+	--expression "global_volume_total / grouped_volume_total" \
+	--result normalization_factor \
+	--output ${output}
+
 for x in lesion csf tissue total; do
   qit TableMath \
     --input ${output} \
-    --expression "global_volume_total * volume_${x} / grouped_volume_total" \
+    --expression "normalization_factor * volume_${x}" \
     --result normalized_volume_${x} \
     --output ${output}
 done
