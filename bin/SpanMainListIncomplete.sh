@@ -19,9 +19,6 @@ name=$(basename $0)
 
 if [ ! -e source ]; then echo "source directory not found!"; exit; fi
 
-echo "Incomplete cases:"
-echo ""
-
 cd source
 for s in */*/*; do 
   if [ ! -e ../process/${s}/standard.map/volume.csv ]; then 
