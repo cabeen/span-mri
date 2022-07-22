@@ -3,12 +3,7 @@
 #
 #  SPAN Rodent MRI Analytics 
 #
-#    A script for checking which cases have not be completely processed.
-#    This will identify cases which have source data but have not completed
-#    running through the entire pipeline.  This could be due to a hardware
-#    failure, or some problem with the data, e.g. a missing scan.  You
-#    will have to look at the incomplete cases to figure out exactly what
-#    the problem is (or simply try re-running them to see if that helps!)
+#    A script for checking which cases have been completely processed.
 #
 #  Author: Ryan Cabeen
 #
