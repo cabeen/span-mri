@@ -168,6 +168,7 @@ if [ ! -e native.fit ]; then
 
   for m in adc t2; do
 		runit ${qitcmd} VolumeExpDecayFit \
+      --skipFirstThresh 7 \
 			--input       native.denoise/${m}.nii.gz \
 			--varying     native.denoise/${m}.txt \
 			--outputAlpha ${tmp}/${m}_base.nii.gz \
