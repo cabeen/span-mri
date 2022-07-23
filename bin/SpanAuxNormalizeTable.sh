@@ -105,7 +105,7 @@ done
 
 qit TableSelect \
   --input ${output} \
-  --remove global_volume_total,grouped_volume_total \
+  --remove global_volume_total,grouped_volume_total,species_site \
   --output ${output}
 
 echo "finished"
