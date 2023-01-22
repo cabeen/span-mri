@@ -439,7 +439,7 @@ if [ ! -e standard.vis ]; then
     --output ${tmp}/anatomy.nii.gz
 
   for labels in anatomy brain lesion csf rois hemis; do 
-    for param in {adc,t2}_{rate,base}; do
+    for param in {adc,t2}_rate; do
       visit standard.harm/${param}.nii.gz ${param} ${labels} ${tmp}
     done
   done
