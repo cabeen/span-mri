@@ -26,23 +26,17 @@ qit TableSelect \
 
 qit TableMath \
   --input ${output} \
-  --expression "volume_csf + volume_tissue + volume_lesion" \
+  --expression "volumetrics_by_classes_volume_tissue + volumetrics_by_classes_volume_csf + volumetrics_by_classes_volume_lesion" \
   --result "volume_total" \
   --output ${output}
 
 for x in csf tissue lesion; do
   qit TableMath \
     --input ${output} \
-    --expression "volume_${x} / volume_total" \
-    --result "fraction_${x}" \
+    --expression "volumetrics_by_classes_volume_${x} / volume_total" \
+    --result "volumetrics_by_classes_fraction_${x}" \
     --output ${output}
 done
-
-qit TableMath \
-  --input ${output} \
-  --expression "volume_lesion + volume_csf + volume_tissue" \
-  --result volume_total \
-  --output ${output}
 
 qit TableStats \
   --input ${output} \
@@ -95,13 +89,19 @@ qit TableMath \
 	--result normalization_factor \
 	--output ${output}
 
-for x in lesion csf tissue total; do
+for x in lesion csf tissue; do
   qit TableMath \
     --input ${output} \
-    --expression "normalization_factor * volume_${x}" \
-    --result normalized_volume_${x} \
+    --expression "normalization_factor * volumetrics_by_classes_volume_${x}" \
+    --result volumetrics_by_classes_normalized_volume_${x} \
     --output ${output}
 done
+
+qit TableMath \
+	--input ${output} \
+	--expression "normalization_factor * volume_total" \
+	--result normalized_volume_total \
+	--output ${output}
 
 qit TableSelect \
   --input ${output} \

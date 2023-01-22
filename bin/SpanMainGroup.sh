@@ -66,7 +66,7 @@ done >> ${output}/tables/meta.csv
 echo "  ... grouping tables" 
 qit --verbose MapCat \
   --pattern ${input}/%{species}/%{timepoint}/%{subject}/standard.map/%{metric}.csv \
-  --vars species=rat,mouse timepoint=early,late subject=${output}/sids.txt metric=midline,adc_qa,hemis_classes_adc_rate_mean,hemis_classes_adc_rate_harm_mean,hemis_classes_adc_rate_std,hemis_classes_adc_rate_harm_std,hemis_classes_t2_base_mean,hemis_classes_t2_base_harm_mean,hemis_classes_t2_rate_mean,hemis_classes_t2_rate_harm_mean,hemis_classes_t2_rate_std,hemis_classes_t2_rate_harm_std,t2_qa,volumetrics_by_hemis_classes,volumetrics_by_classes,volumetrics_by_regions\
+  --vars species=rat,mouse timepoint=early,late subject=${output}/sids.txt metric=midline,adc_qa,hemis_classes_adc_rate_mean,hemis_classes_adc_rate_harm_mean,hemis_classes_adc_rate_std,hemis_classes_adc_rate_harm_std,hemis_classes_t2_rate_mean,hemis_classes_t2_rate_harm_mean,hemis_classes_t2_rate_std,hemis_classes_t2_rate_harm_std,t2_qa,volumetrics_by_hemis_classes,volumetrics_by_classes,volumetrics_by_hemis_classes_regions \
   --skip \
   --output ${output}/tables/metrics.csv
 
@@ -98,43 +98,17 @@ qit TableWiden \
   --name measure \
   --output ${output}/table.wide.csv
 
-cat ${output}/table.wide.csv | sed 's/volume_volume/volume/g' > ${output}/tmp \
- && mv ${output}/tmp ${output}/table.wide.csv
+qit TableSelect \
+  --input ${output}/table.wide.csv \
+  --retain uid,subject,species,site,date,timepoint,adc_qa_snr,t2_qa_snr,midline_shift_percent,midline_shift_ratio,midline_shift_index,midline_shift_left,midline_shift_right,midline_tissue_volume_left,midline_tissue_volume_right,midline_tissue_volume_index,midline_brain_volume_left,midline_brain_volume_right,midline_brain_volume_index,volumetrics_by_hemis_classes_volume_left_tissue,volumetrics_by_hemis_classes_volume_right_tissue,volumetrics_by_hemis_classes_volume_left_csf,volumetrics_by_hemis_classes_volume_right_csf,volumetrics_by_hemis_classes_volume_left_lesion,volumetrics_by_hemis_classes_volume_right_lesion,volumetrics_by_classes_volume_tissue,volumetrics_by_classes_volume_csf,volumetrics_by_classes_volume_lesion,hemis_classes_adc_rate_mean_left_tissue,hemis_classes_adc_rate_mean_right_tissue,hemis_classes_adc_rate_mean_left_csf,hemis_classes_adc_rate_mean_right_csf,hemis_classes_adc_rate_mean_left_lesion,hemis_classes_adc_rate_mean_right_lesion,hemis_classes_adc_rate_harm_mean_left_tissue,hemis_classes_adc_rate_harm_mean_right_tissue,hemis_classes_adc_rate_harm_mean_left_csf,hemis_classes_adc_rate_harm_mean_right_csf,hemis_classes_adc_rate_harm_mean_left_lesion,hemis_classes_adc_rate_harm_mean_right_lesion,hemis_classes_adc_rate_std_left_tissue,hemis_classes_adc_rate_std_right_tissue,hemis_classes_adc_rate_std_left_csf,hemis_classes_adc_rate_std_right_csf,hemis_classes_adc_rate_std_left_lesion,hemis_classes_adc_rate_std_right_lesion,hemis_classes_adc_rate_harm_std_left_tissue,hemis_classes_adc_rate_harm_std_right_tissue,hemis_classes_adc_rate_harm_std_left_csf,hemis_classes_adc_rate_harm_std_right_csf,hemis_classes_adc_rate_harm_std_left_lesion,hemis_classes_adc_rate_harm_std_right_lesion,hemis_classes_t2_rate_mean_left_tissue,hemis_classes_t2_rate_mean_right_tissue,hemis_classes_t2_rate_mean_left_csf,hemis_classes_t2_rate_mean_right_csf,hemis_classes_t2_rate_mean_left_lesion,hemis_classes_t2_rate_mean_right_lesion,hemis_classes_t2_rate_harm_mean_left_tissue,hemis_classes_t2_rate_harm_mean_right_tissue,hemis_classes_t2_rate_harm_mean_left_csf,hemis_classes_t2_rate_harm_mean_right_csf,hemis_classes_t2_rate_harm_mean_left_lesion,hemis_classes_t2_rate_harm_mean_right_lesion,hemis_classes_t2_rate_std_left_tissue,hemis_classes_t2_rate_std_right_tissue,hemis_classes_t2_rate_std_left_csf,hemis_classes_t2_rate_std_right_csf,hemis_classes_t2_rate_std_left_lesion,hemis_classes_t2_rate_std_right_lesion,hemis_classes_t2_rate_harm_std_left_tissue,hemis_classes_t2_rate_harm_std_right_tissue,hemis_classes_t2_rate_harm_std_left_csf,hemis_classes_t2_rate_harm_std_right_csf,hemis_classes_t2_rate_harm_std_left_lesion,hemis_classes_t2_rate_harm_std_right_lesion,volumetrics_by_hemis_classes_regions_volume_left_cortex_tissue,volumetrics_by_hemis_classes_regions_volume_right_cortex_tissue,volumetrics_by_hemis_classes_regions_volume_left_striatum_tissue,volumetrics_by_hemis_classes_regions_volume_right_striatum_tissue,volumetrics_by_hemis_classes_regions_volume_left_hippocampus_tissue,volumetrics_by_hemis_classes_regions_volume_right_hippocampus_tissue,volumetrics_by_hemis_classes_regions_volume_left_thalamus_tissue,volumetrics_by_hemis_classes_regions_volume_right_thalamus_tissue,volumetrics_by_hemis_classes_regions_volume_left_cortex_csf,volumetrics_by_hemis_classes_regions_volume_right_cortex_csf,volumetrics_by_hemis_classes_regions_volume_left_striatum_csf,volumetrics_by_hemis_classes_regions_volume_right_striatum_csf,volumetrics_by_hemis_classes_regions_volume_left_hippocampus_csf,volumetrics_by_hemis_classes_regions_volume_right_hippocampus_csf,volumetrics_by_hemis_classes_regions_volume_left_thalamus_csf,volumetrics_by_hemis_classes_regions_volume_right_thalamus_csf,volumetrics_by_hemis_classes_regions_volume_left_cortex_lesion,volumetrics_by_hemis_classes_regions_volume_right_cortex_lesion,volumetrics_by_hemis_classes_regions_volume_left_striatum_lesion,volumetrics_by_hemis_classes_regions_volume_right_striatum_lesion,volumetrics_by_hemis_classes_regions_volume_left_hippocampus_lesion,volumetrics_by_hemis_classes_regions_volume_right_hippocampus_lesion,volumetrics_by_hemis_classes_regions_volume_left_thalamus_lesion,volumetrics_by_hemis_classes_regions_volume_right_thalamus_lesion \
+  --output ${output}/table.wide.csv
 
-# qit TableSelect \
-#   --input ${output}/table.wide.csv \
-#   --retain subject,species,site,timepoint,date,volume_csf,volume_tissue,volume_lesion,adc_rate_mean_tissue,adc_rate_mean_csf,adc_rate_mean_lesion,t2_rate_mean_tissue,t2_rate_mean_csf,t2_rate_mean_lesion,adc_qa_snr,t2_qa_snr,midline_shift_percent,midline_shift_ratio,midline_shift_index,midline_shift_left,midline_shift_right,midline_tissue_volume_left,midline_tissue_volume_right,midline_tissue_volume_index,regions_volume_lesion_striatum,regions_volume_lesion_cortex,regions_volume_lesion_thalamus,regions_volume_lesion_hippocampus \
-#   --output ${output}/table.wide.csv
-# 
 # bash ${mybin}/SpanAuxNormalizeTable.sh \
-#   ${output}/table.wide.csv ${output}/table.wide.csv
-# 
+#  ${output}/table.wide.csv ${output}/table.wide.csv
+
 # echo "  making metadata" 
 # python ${mybin}/SpanAuxSummarize.py \
 #   --input ${input} --output ${output}/tables/metadata.csv
-# 
-# echo "  making vis" 
-# for sdir in ${input}/*/*/*; do
-#   echo "  ... ${sdir}"
-#   if [ -e ${sdir}/standard.vis ]; then
-# 		sid=$(basename ${sdir})
-# 		tp=$(basename $(dirname ${sdir}))
-# 		species=$(basename $(dirname $(dirname ${sdir})))
-# 		site=$(cat ${sdir}/native.import/site.txt)
-# 		date=$(cat ${sdir}/native.import/date.txt)
-# 
-# 		for contrast in {adc,t2}_{rate,base}; do
-# 		  for vis in anatomy brain lesion csf rois; do
-# 		    infn=${input}/${species}/${tp}/${sid}/standard.vis/${contrast}_${vis}.png
-# 		    if [ -e ${infn} ]; then
-# 		       ln ${infn} ${output}/vis/${species}_${site}_${sid}_${tp}_${contrast}_${vis}.png
-# 		    fi
-# 		  done
-# 		done
-#   fi
-# done
-
-echo "finished"
 
 ################################################################################
 # END
