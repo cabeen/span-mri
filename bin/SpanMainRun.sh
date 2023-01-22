@@ -378,7 +378,7 @@ if [ ! -e standard.map ]; then
 			--output ${tmp}
   done
 
-  for n in classes hemis regions hemis_classes hemis_classes_regions; do
+  for n in classes hemis hemis_classes classes_regions hemis_classes_regions; do
 		runit ${qitcmd} MaskMeasure \
 			--input standard.label/${n}.nii.gz \
 			--lookup standard.label/${n}.csv \
