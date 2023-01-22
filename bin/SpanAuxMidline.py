@@ -62,7 +62,8 @@ def main():
     centroids = MaskCentroids.apply(region_mask)
 
     landmarks = VectsSource.create() 
-    hemis_mask = tissue_mask.proto()
+    tissue_hemis_mask = tissue_mask.proto()
+    brain_hemis_mask = brain_mask.proto()
     
     if centroids.size() == 0:
         Logging.info("no centroid found, saving NA values")
@@ -82,6 +83,9 @@ def main():
         f.write("tissue_volume_left,NA\n")
         f.write("tissue_volume_right,NA\n")
         f.write("tissue_volume_latidx,NA\n")
+        f.write("brain_volume_left,NA\n")
+        f.write("brain_volume_right,NA\n")
+        f.write("brain_volume_latidx,NA\n")
         f.close()
     
     else:
@@ -134,10 +138,15 @@ def main():
         shift_ratio = shift_min / shift_max
         shift_index = 2.0 * (shift_right - shift_left) / (shift_right + shift_left)
 
-        hemis_mask = MaskUtils.split(tissue_mask, landmarks)
-        vol_left = MaskUtils.volume(hemis_mask, 1)
-        vol_right = MaskUtils.volume(hemis_mask, 2)
-        vol_index = 2.0 * (vol_right - vol_left) / (vol_left + vol_right)
+        tissue_hemis_mask = MaskUtils.split(tissue_mask, landmarks)
+        tissue_vol_left = MaskUtils.volume(tissue_hemis_mask, 1)
+        tissue_vol_right = MaskUtils.volume(tissue_hemis_mask, 2)
+        tissue_vol_index = 2.0 * (tissue_vol_right - tissue_vol_left) / (tissue_vol_left + tissue_vol_right)
+
+        brain_hemis_mask = MaskUtils.split(brain_mask, landmarks)
+        brain_vol_left = MaskUtils.volume(brain_hemis_mask, 1)
+        brain_vol_right = MaskUtils.volume(brain_hemis_mask, 2)
+        brain_vol_index = 2.0 * (brain_vol_right - brain_vol_left) / (brain_vol_left + brain_vol_right)
 
         f = open(join(tmp_dn, "map.csv"), 'w')
         f.write("name,value\n")
@@ -155,14 +164,18 @@ def main():
         f.write("shift_max,%g\n" % shift_max)
         f.write("shift_ratio,%g\n" % shift_ratio)
         f.write("shift_index,%g\n" % shift_index)
-        f.write("tissue_volume_left,%g\n" % vol_left)
-        f.write("tissue_volume_right,%g\n" % vol_right)
-        f.write("tissue_volume_index,%g\n" % vol_index)
+        f.write("tissue_volume_left,%g\n" % tissue_vol_left)
+        f.write("tissue_volume_right,%g\n" % tissue_vol_right)
+        f.write("tissue_volume_index,%g\n" % tissue_vol_index)
+        f.write("brain_volume_left,%g\n" % brain_vol_left)
+        f.write("brain_volume_right,%g\n" % brain_vol_right)
+        f.write("brain_volume_index,%g\n" % brain_vol_index)
         f.close()
         
     centroids.write(join(tmp_dn, "centroid.txt"))
     landmarks.write(join(tmp_dn, "landmarks.txt"))
-    hemis_mask.write(join(tmp_dn, "hemis.mask.nii.gz"))
+    tissue_hemis_mask.write(join(tmp_dn, "tissue.hemis.mask.nii.gz"))
+    brain_hemis_mask.write(join(tmp_dn, "brain.hemis.mask.nii.gz"))
 
     if exists(output_dn):
       bck = "%s.bck.%d" % (output_dn, int(time()))

@@ -308,13 +308,6 @@ if [ ! -e standard.seg ]; then
      --prior ${data}/${species}/lesion.mask.nii.gz \
      --output standard.seg
 
-  runit ${qitcmd} MaskIntersection \
-     --left ${data}/${species}/regions.nii.gz \
-     --right standard.seg/lesion.mask.nii.gz \
-     --output standard.seg/lesion.regions.nii.gz
-  runit cp ${data}/${species}/lesion.regions.csv \
-     standard.seg/lesion.regions.csv
-
 fi
 
 if [ ! -e standard.midline ]; then
@@ -328,6 +321,35 @@ if [ ! -e standard.midline ]; then
 
 fi
 
+if [ ! -e standard.label ]; then
+
+  tmp=standard.label.tmp.${RANDOM}
+  mkdir -p ${tmp}
+
+  runit cp standard.seg/rois.nii.gz ${tmp}/classes.nii.gz
+  runit cp standard.seg/rois.csv ${tmp}/classes.csv
+
+  runit cp standard.midline/brain.hemis.mask.nii.gz ${tmp}/hemis.nii.gz
+  runit cp ${data}/${species}/hemis.csv ${tmp}/hemis.csv
+
+  runit ${qitcmd} MaskProduct\
+     --left ${data}/${species}/regions.nii.gz \
+     --right ${tmp}/classes.nii.gz \
+     --output ${tmp}/classes_regions.nii.gz
+
+  runit ${qitcmd} MaskProduct\
+     --left ${tmp}/hemis.nii.gz \
+     --right ${tmp}/classes_regions.nii.gz \
+     --output ${tmp}/hemis_classes_regions.nii.gz
+
+  runit ${qitcmd} MaskProduct\
+     --left ${tmp}/hemis.nii.gz \
+     --right ${tmp}/classes.nii.gz \
+     --output ${tmp}/hemis_classes.nii.gz
+
+  mv ${tmp} standard.label
+fi
+
 if [ ! -e standard.map ]; then
 
   tmp=standard.map.tmp.${RANDOM}
@@ -339,29 +361,29 @@ if [ ! -e standard.map ]; then
 
   cp standard.midline/map.csv ${tmp}/midline.csv
 
-  runit ${qitcmd} MaskRegionsMeasure \
-    --regions standard.seg/rois.nii.gz \
-    --lookup standard.seg/rois.csv \
-    --volume adc_rate=standard.fit/adc_rate.nii.gz \
-             t2_rate=standard.fit/t2_rate.nii.gz \
-             adc_base=standard.fit/adc_base.nii.gz \
-             t2_base=standard.fit/t2_base.nii.gz \
-             adc_rate_harm=standard.harm/adc_rate.nii.gz \
-             t2_rate_harm=standard.harm/t2_rate.nii.gz \
-             adc_base_harm=standard.harm/adc_base.nii.gz \
-             t2_base_harm=standard.harm/t2_base.nii.gz \
-    --mask standard.mask/brain.mask.nii.gz \
-    --output ${tmp}
+  for label in classes hemis_classes; do
+		runit ${qitcmd} MaskRegionsMeasure \
+			--basic \
+			--regions standard.label/${label}.nii.gz \
+			--lookup standard.label/${label}.csv \
+			--volume ${label}_adc_rate=standard.fit/adc_rate.nii.gz \
+							 ${label}_t2_rate=standard.fit/t2_rate.nii.gz \
+							 ${label}_adc_base=standard.fit/adc_base.nii.gz \
+							 ${label}_t2_base=standard.fit/t2_base.nii.gz \
+							 ${label}_adc_rate_harm=standard.harm/adc_rate.nii.gz \
+							 ${label}_t2_rate_harm=standard.harm/t2_rate.nii.gz \
+							 ${label}_adc_base_harm=standard.harm/adc_base.nii.gz \
+							 ${label}_t2_base_harm=standard.harm/t2_base.nii.gz \
+			--mask standard.mask/brain.mask.nii.gz \
+			--output ${tmp}
+  done
 
-  runit ${qitcmd} MaskMeasure \
-    --input standard.seg/rois.nii.gz \
-    --lookup standard.seg/rois.csv \
-    --output ${tmp}/volume.csv
-
-  runit ${qitcmd} MaskMeasure \
-    --input standard.seg/lesion.regions.nii.gz \
-    --lookup standard.seg/lesion.regions.csv \
-    --output ${tmp}/regions.csv
+  for n in classes hemis regions hemis_classes hemis_classes_regions; do
+		runit ${qitcmd} MaskMeasure \
+			--input standard.label/${n}.nii.gz \
+			--lookup standard.label/${n}.csv \
+			--output ${tmp}/volumetrics_by_${n}.csv
+  done
 
   mv ${tmp} standard.map
 
@@ -392,6 +414,11 @@ if [ ! -e standard.vis ]; then
 
   runit ${qitcmd} MaskShell \
     --mode Multi \
+    --input standard.label/hemis.nii.gz \
+    --output ${tmp}/hemis.nii.gz
+
+  runit ${qitcmd} MaskShell \
+    --mode Multi \
     --input standard.seg/rois.nii.gz \
     --output ${tmp}/rois.nii.gz
 
@@ -411,7 +438,7 @@ if [ ! -e standard.vis ]; then
     --input ${tmp}/brain.nii.gz \
     --output ${tmp}/anatomy.nii.gz
 
-  for labels in anatomy brain lesion csf rois; do 
+  for labels in anatomy brain lesion csf rois hemis; do 
     for param in {adc,t2}_{rate,base}; do
       visit standard.harm/${param}.nii.gz ${param} ${labels} ${tmp}
     done
