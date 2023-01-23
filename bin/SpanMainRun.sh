@@ -149,13 +149,14 @@ if [ ! -e native.denoise ]; then
   tmp=native.denoise.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-  for p in adc t2; do
+  for p in adc t2 t1rare mgelow mgehigh t2star; do
     runit bash ${workflow}/SpanAuxDenoise.sh \
 			 native.import/${p}.nii.gz  ${tmp}/${p}.nii.gz
   done
 
   runit cp native.import/t2.txt ${tmp}
   runit cp native.import/adc.txt ${tmp}
+  runit cp native.import/t2star.txt ${tmp}
 
   mv ${tmp} native.denoise
 

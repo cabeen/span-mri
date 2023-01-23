@@ -48,18 +48,60 @@ cp ${workflow}/params/Common/$(basename $(cd ${input} && cd ../.. && pwd)).txt $
 
 cat ${input}/images.csv | awk -vcol=DicomAcquisitionDate 'BEGIN{FS=","}(NR==1){colnum=-1;for(i=1;i<=NF;i++)if($(i)==col)colnum=i;}{print $(colnum)}' | tail -n 1 > ${output}/date.txt
 
-rare="$(find ${nifti} \( -path '*RARE*.nii.gz' -or -path '*T2_anatomy*.nii.gz' \) -print -quit)"
-if [ ! -e ${output}/rare.nii.gz ] && [ -e ${rare} ] && [ "${rare}" != "" ]; then
-  echo "  using rare:"
-  echo "${rare}"
-	echo "  organizing rare"
+mgelow="$(find ${nifti} \( -path '*MGE_2echo_15_timePoints_*_e1.nii.gz' \) -print -quit)"
+if [ ! -e ${output}/mgelow.nii.gz ] && [ -e ${mgelow} ] && [ "${mgelow}" != "" ]; then
+  echo "  using mgelow:"
+  echo "${mgelow}"
+	echo "  organizing mgelow"
 
-  runit cp ${rare} ${output}/rare.nii.gz
+  runit cp ${mgelow} ${output}/mgelow.nii.gz
 
   if [ ! ${ref} ]; then 
      runit qit --load ${workflow}/params/Common/resample.json \
-       --input ${output}/rare.nii.gz --output ${output}/rare.nii.gz
-     ref=${output}/rare.nii.gz
+       --input ${output}/mgelow.nii.gz --output ${output}/mgelow.nii.gz
+     ref=${output}/mgelow.nii.gz
+  else
+     echo "    using ref: ${ref}"
+     runit qit --load ${workflow}/params/Common/transform.json \
+       --reference ${ref} --input ${output}/mgelow.nii.gz --output ${output}/mgelow.nii.gz
+  fi
+fi
+
+mgehigh="$(find ${nifti} \( -path '*MGE_2echo_15_timePoints_*_e1a.nii.gz' \) -print -quit)"
+if [ ! -e ${output}/mgehigh.nii.gz ] && [ -e ${mgehigh} ] && [ "${mgehigh}" != "" ]; then
+  echo "  using mgehigh:"
+  echo "${mgehigh}"
+	echo "  organizing mgehigh"
+
+  runit cp ${mgehigh} ${output}/mgehigh.nii.gz
+
+  if [ ! ${ref} ]; then 
+     runit qit --load ${workflow}/params/Common/resample.json \
+       --input ${output}/mgehigh.nii.gz --output ${output}/mgehigh.nii.gz
+     ref=${output}/mgehigh.nii.gz
+  else
+     echo "    using ref: ${ref}"
+     runit qit --load ${workflow}/params/Common/transform.json \
+       --reference ${ref} --input ${output}/mgehigh.nii.gz --output ${output}/mgehigh.nii.gz
+  fi
+fi
+
+t1rare="$(find ${nifti} \( -path '*T1map_RARE*.nii.gz' \) -print -quit)"
+if [ ! -e ${output}/t1rare.nii.gz ] && [ -e ${t1rare} ] && [ "${t1rare}" != "" ]; then
+  echo "  using t1rare:"
+  echo "${t1rare}"
+	echo "  organizing t1rare"
+
+  runit cp ${t1rare} ${output}/t1rare.nii.gz
+
+  if [ ! ${ref} ]; then 
+     runit qit --load ${workflow}/params/Common/resample.json \
+       --input ${output}/t1rare.nii.gz --output ${output}/t1rare.nii.gz
+     ref=${output}/t1rare.nii.gz
+  else
+     echo "    using ref: ${ref}"
+     runit qit --load ${workflow}/params/Common/transform.json \
+       --reference ${ref} --input ${output}/t1rare.nii.gz --output ${output}/t1rare.nii.gz
   fi
 fi
 
@@ -86,9 +128,9 @@ if [ ! -e ${output}/adc.nii.gz ] && [ -e ${adc} ]; then
   fi
 fi
 
-t2map="$(find ${nifti} \( -path '*T2_SurfaceCoil*.nii.gz' -or -path '*T2_map*.nii.gz' -or -path '*T2map*.nii.gz' -or -path '*T2MAP*.nii.gz' \) -print -quit)"
+t2map="$(find ${nifti} \( -path '*T2_map*.nii.gz' \) -print -quit)"
 if [ ! -e ${output}/t2.nii.gz ] && [ -e ${at2map} ]; then
-  t2map="$(find ${nifti} \( -path '*T2_SurfaceCoil*.nii.gz' -or -path '*T2_map*.nii.gz' -or -path '*T2map*.nii.gz' -or -path '*T2MAP*.nii.gz' \))"
+  t2map="$(find ${nifti} \( -path '*T2_map*.nii.gz' \))"
 	echo "  using t2maps:"
 	echo "${t2map}"
 	echo "  organizing t2"
@@ -103,6 +145,26 @@ if [ ! -e ${output}/t2.nii.gz ] && [ -e ${at2map} ]; then
      echo "    using ref: ${ref}"
      runit qit --load ${workflow}/params/Common/transform.json \
        --reference ${ref} --input ${output}/t2.nii.gz --output ${output}/t2.nii.gz
+  fi
+fi
+
+t2star="$(find ${nifti} \( -path '*T2star_map*.nii.gz' \) -print -quit)"
+if [ ! -e ${output}/t2star.nii.gz ] && [ -e ${t2star} ]; then
+  t2star="$(find ${nifti} \( -path '*T2star_map*.nii.gz' \))"
+	echo "  using t2star:"
+	echo "${t2star}"
+	echo "  organizing t2star"
+  runit qit VolumeParseEchoes \
+    --input ${t2star} --output-volume ${output}/t2star.nii.gz --output-echoes ${output}/t2star.txt
+
+  if [ ! ${ref} ]; then 
+     runit qit --load ${workflow}/params/Common/resample.json \
+       --input ${output}/t2star.nii.gz --output ${output}/t2star.nii.gz
+     ref=${output}/t2star.nii.gz
+  else
+     echo "    using ref: ${ref}"
+     runit qit --load ${workflow}/params/Common/transform.json \
+       --reference ${ref} --input ${output}/t2star.nii.gz --output ${output}/t2star.nii.gz
   fi
 fi
 
