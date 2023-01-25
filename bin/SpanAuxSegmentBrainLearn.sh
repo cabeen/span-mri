@@ -1,4 +1,4 @@
-#! /usr/bin/env bash 
+#! /usr/bin/bash 
 ##############################################################################
 #
 #  SPAN Rodent MRI Analytics 
@@ -15,6 +15,7 @@ if [ $# -lt "1" ]; then
 fi
 
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
+source ~/.bash_profile
 
 echo "started"
 
@@ -31,27 +32,15 @@ if [ ! -e ${input}/adc_base.nii.gz ]; then
     exit
 fi
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/rcabeen/opt/anaconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/rcabeen/opt/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/Users/rcabeen/opt/anaconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/rcabeen/opt/anaconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
-conda activate spanenv
-
+echo "fusing images"
 qit VolumeFuse \
     --input ${input}/{t2,adc}_{base,rate}.nii.gz \
     --output-cat ${output}.fuse.nii.gz \
 
+conda activate spanenv
+echo "using python: $(which python)"
+
+echo "running inference"
 python ${ROOT}/lib/unetseg/predict.py \
   --model ${ROOT}/lib/brain-model \
   --image ${output}.fuse.nii.gz \
