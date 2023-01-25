@@ -43,7 +43,7 @@ for sdir in ${input}/*/*/*; do
 		date=$(cat ${sdir}/native.import/date.txt)
 
 		for contrast in {adc,t2}_rate; do
-		  for vis in anatomy brain lesion csf rois; do
+		  for vis in anatomy brain lesion csf rois hemis; do
 		    infn=${input}/${species}/${tp}/${sid}/standard.vis/${contrast}_${vis}.png
 		    if [ -e ${infn} ]; then
 		       ln ${infn} ${output}/vis/${species}_${site}_${sid}_${tp}_${contrast}_${vis}.png
