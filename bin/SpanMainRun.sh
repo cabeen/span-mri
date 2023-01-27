@@ -277,6 +277,76 @@ for p in fit harm; do
 	fi
 done
 
+if [ ! -e standard.import ]; then
+
+	tmp=standard.import.tmp.${RANDOM}
+	mkdir -p ${tmp}
+
+	for m in native.import/*.nii.gz; do
+
+		runit ${qitcmd} VolumeTransform \
+			--input ${m} \
+			--affine native.reg/xfm.txt \
+			--reference ${data}/${species}/brain.nii.gz \
+			--output ${tmp}/$(basename ${m})
+
+	done
+
+  cp native.import/*.txt ${tmp}
+
+	mv ${tmp} standard.import
+
+fi
+
+if [ ! -e standard.bbb.check ]; then
+
+
+	tmp=standard.bbb.check.tmp.${RANDOM}
+	mkdir -p ${tmp}
+
+  
+  cp standard.seg/lesion.mask.nii.gz ${tmp}/lesion.nii.gz
+
+  runit ${qitcmd} MaskReorder \
+    --flipi \
+    --input ${tmp}/lesion.nii.gz \
+    --output ${tmp}/contra.nii.gz
+
+  runit ${qitcmd} MaskIntersection \
+    --left ${tmp}/contra.nii.gz \
+    --right standard.seg/tissue.mask.nii.gz \
+    --output ${tmp}/contra.nii.gz
+
+  runit ${qitcmd} MaskSet \
+    --input ${tmp}/lesion.nii.gz \
+    --label 2 \
+    --mask ${tmp}/contra.nii.gz \
+    --output ${tmp}/rois.nii.gz
+
+  runit ${qitcmd} MaskErode \
+    --num 2 \
+    --input ${tmp}/rois.nii.gz \
+    --output ${tmp}/rois.nii.gz
+
+  rm ${tmp}/{contra,lesion}.nii.gz
+
+  echo "index,name" > ${tmp}/rois.csv
+  echo "1,lesion" >> ${tmp}/rois.csv
+  echo "2,contra" >> ${tmp}/rois.csv
+ 
+  for n in t1rare adc t2 t2star mgelow mgehigh; do 
+    runit ${qitcmd} VolumeMeasureMulti \
+			--input standard.import/${n}.nii.gz \
+      --mask ${tmp}/rois.nii.gz \
+      --lookup ${tmp}/rois.csv \
+      --multiple \
+      --output ${tmp}/${n}.csv
+  done
+
+	mv ${tmp} standard.bbb.check
+
+fi
+
 if [ ! -e standard.mask ]; then
 
   tmp=standard.mask.tmp.${RANDOM}
@@ -308,6 +378,25 @@ if [ ! -e standard.seg ]; then
      --mask standard.mask/brain.mask.nii.gz \
      --prior ${data}/${species}/lesion.mask.nii.gz \
      --output standard.seg
+
+fi
+
+if [ ! -e native.seg ]; then
+
+	tmp=native.seg.tmp.${RANDOM}
+	mkdir -p ${tmp}
+
+	for m in csf lesion tissue; do
+
+		runit ${qitcmd} MaskTransform \
+			--input standard.seg/${m}.mask.nii.gz \
+			--affine native.reg/invxfm.txt \
+			--reference native.harm/t2_rate.nii.gz \
+			--output ${tmp}/${m}.mask.nii.gz 
+
+	done
+
+	mv ${tmp} native.${p}
 
 fi
 
