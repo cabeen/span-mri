@@ -277,12 +277,12 @@ for p in fit harm; do
 	fi
 done
 
-if [ ! -e standard.import ]; then
+if [ ! -e standard.denoise ]; then
 
-	tmp=standard.import.tmp.${RANDOM}
+	tmp=standard.denoise.tmp.${RANDOM}
 	mkdir -p ${tmp}
 
-	for m in native.import/*.nii.gz; do
+	for m in native.denoise/*.nii.gz; do
 
 		runit ${qitcmd} VolumeTransform \
 			--input ${m} \
@@ -292,18 +292,39 @@ if [ ! -e standard.import ]; then
 
 	done
 
-  cp native.import/*.txt ${tmp}
+  cp native.denoise/*.txt ${tmp}
 
-	mv ${tmp} standard.import
+	mv ${tmp} standard.denoise
 
 fi
 
-if [ ! -e standard.bbb.check ]; then
+if [ ! -e standard.manual/mask.nii.gz ]; then
+
+	mkdir -p standard.manual
+
+  runit ${qitcmd} VolumeFuse \
+    --input standard.denoise/mge{low,high}.nii.gz \
+    --output-cat standard.manual/mgemax.nii.gz
+
+  runit ${qitcmd} VolumeReduce --method Max \
+    --input standard.manual/mgemax.nii.gz \
+    --output standard.manual/mgemax.nii.gz
+
+  echo ""
+  echo "  Manual intervention needed."
+  echo ""
+  echo "  Please create standard.manual/sag.nii.gz and rerun pipeline."
+  echo ""
+  exit 0
+
+fi
 
 
-	tmp=standard.bbb.check.tmp.${RANDOM}
+if [ ! -e standard.bbb ]; then
+
+
+	tmp=standard.bbb.tmp.${RANDOM}
 	mkdir -p ${tmp}
-
   
   cp standard.seg/lesion.mask.nii.gz ${tmp}/lesion.nii.gz
 
@@ -328,11 +349,18 @@ if [ ! -e standard.bbb.check ]; then
     --input ${tmp}/rois.nii.gz \
     --output ${tmp}/rois.nii.gz
 
+  runit ${qitcmd} MaskSet \
+    --label 3 \
+    --mask standard.manual/mask.nii.gz \
+    --input ${tmp}/rois.nii.gz \
+    --output ${tmp}/rois.nii.gz
+
   rm ${tmp}/{contra,lesion}.nii.gz
 
   echo "index,name" > ${tmp}/rois.csv
   echo "1,lesion" >> ${tmp}/rois.csv
   echo "2,contra" >> ${tmp}/rois.csv
+  echo "3,sag" >> ${tmp}/rois.csv
  
   for n in t1rare adc t2 t2star mgelow mgehigh; do 
     runit ${qitcmd} VolumeMeasureMulti \
@@ -343,7 +371,77 @@ if [ ! -e standard.bbb.check ]; then
       --output ${tmp}/${n}.csv
   done
 
-	mv ${tmp} standard.bbb.check
+  echo "TR" > ${tmp}/vtr.txt
+	echo "2206.15" >> ${tmp}/vtr.txt
+	echo "2250" >> ${tmp}/vtr.txt
+	echo "2750" >> ${tmp}/vtr.txt
+	echo "4000" >> ${tmp}/vtr.txt
+	echo "7000" >> ${tmp}/vtr.txt
+	echo "12000" >> ${tmp}/vtr.txt
+
+  for t in lesion contra sag; do 
+    echo "${t}" > ${tmp}/${t}-tmp.txt
+    cat ${tmp}/t1rare.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
+    paste -d' ' ${tmp}/vtr.txt ${tmp}/${t}-tmp.txt > ${tmp}/vtr-paste.txt
+    mv ${tmp}/vtr-paste.txt ${tmp}/vtr.txt
+    rm ${tmp}/${t}-tmp.txt
+  done
+
+  echo "index" > ${tmp}/shortTE.txt
+  echo "0" >> ${tmp}/shortTE.txt
+  echo "1" >> ${tmp}/shortTE.txt
+  echo "2" >> ${tmp}/shortTE.txt
+  echo "3" >> ${tmp}/shortTE.txt
+  echo "4" >> ${tmp}/shortTE.txt
+  echo "5" >> ${tmp}/shortTE.txt
+  echo "6" >> ${tmp}/shortTE.txt
+  echo "7" >> ${tmp}/shortTE.txt
+  echo "8" >> ${tmp}/shortTE.txt
+  echo "9" >> ${tmp}/shortTE.txt
+  echo "10" >> ${tmp}/shortTE.txt
+  echo "11" >> ${tmp}/shortTE.txt
+  echo "12" >> ${tmp}/shortTE.txt
+  echo "13" >> ${tmp}/shortTE.txt
+  echo "14 " >> ${tmp}/shortTE.txt
+
+  for t in lesion contra sag; do 
+    echo "${t}" > ${tmp}/${t}-tmp.txt
+    cat ${tmp}/mgelow.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
+    paste -d' ' ${tmp}/shortTE.txt ${tmp}/${t}-tmp.txt > ${tmp}/shortTE-paste.txt
+    mv ${tmp}/shortTE-paste.txt ${tmp}/shortTE.txt
+    rm ${tmp}/${t}-tmp.txt
+  done
+
+  echo "index" > ${tmp}/longTE.txt
+  echo "0" >> ${tmp}/longTE.txt
+  echo "1" >> ${tmp}/longTE.txt
+  echo "2" >> ${tmp}/longTE.txt
+  echo "3" >> ${tmp}/longTE.txt
+  echo "4" >> ${tmp}/longTE.txt
+  echo "5" >> ${tmp}/longTE.txt
+  echo "6" >> ${tmp}/longTE.txt
+  echo "7" >> ${tmp}/longTE.txt
+  echo "8" >> ${tmp}/longTE.txt
+  echo "9" >> ${tmp}/longTE.txt
+  echo "10" >> ${tmp}/longTE.txt
+  echo "11" >> ${tmp}/longTE.txt
+  echo "12" >> ${tmp}/longTE.txt
+  echo "13" >> ${tmp}/longTE.txt
+  echo "14 " >> ${tmp}/longTE.txt
+
+  for t in lesion contra sag; do 
+    echo "${t}" > ${tmp}/${t}-tmp.txt
+    cat ${tmp}/mgehigh.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
+    paste -d' ' ${tmp}/longTE.txt ${tmp}/${t}-tmp.txt > ${tmp}/longTE-paste.txt
+    mv ${tmp}/longTE-paste.txt ${tmp}/longTE.txt
+    rm ${tmp}/${t}-tmp.txt
+  done
+
+  echo "name,value" >> ${tmp}/metrics.csv
+  echo "lesion_ki,$(KiCalc ${tmp}/{vtr,shortTE,longTE}.txt -l)" >> ${tmp}/metrics.csv
+  echo "contra_ki,$(KiCalc ${tmp}/{vtr,shortTE,longTE}.txt -c)" >> ${tmp}/metrics.csv
+
+	mv ${tmp} standard.bbb
 
 fi
 
