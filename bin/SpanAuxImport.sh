@@ -48,7 +48,27 @@ cp ${workflow}/params/Common/$(basename $(cd ${input} && cd ../.. && pwd)).txt $
 
 cat ${input}/images.csv | awk -vcol=DicomAcquisitionDate 'BEGIN{FS=","}(NR==1){colnum=-1;for(i=1;i<=NF;i++)if($(i)==col)colnum=i;}{print $(colnum)}' | tail -n 1 > ${output}/date.txt
 
-mgelow="$(find ${nifti} \( -path '*MGE_2echo_15_timePoints_*_e1.nii.gz' \) -print -quit)"
+mgelow=""
+mgehigh=""
+mgeFirst="$(find ${nifti} \( -path '*MGE_2echo_15_timePoints_*_e1.nii.gz' \) -print -quit)"
+mgeSecond="$(find ${nifti} \( -path '*MGE_2echo_15_timePoints_*_e1a.nii.gz' \) -print -quit)"
+
+if [ -e ${mgeFirst} ] && [ -e ${mgeSecond} ]; then
+  echo found MGE scans
+  mgeFirstMeta="$(find ${nifti} \( -path '*MGE_2echo_15_timePoints_*_e1.json' \) -print -quit)"
+  mgeSecondMeta="$(find ${nifti} \( -path '*MGE_2echo_15_timePoints_*_e1a.json' \) -print -quit)"
+
+  teFirst=$(grep EchoTime ${mgeFirstMeta} | sed 's/.*: //g' | sed 's/,//g')
+  teSecond=$(grep EchoTime ${mgeSecondMeta} | sed 's/.*: //g' | sed 's/,//g')
+  if [ ${teFirst} == "0.002" ] && [ ${teSecond} == "0.007" ]; then 
+    mgelow=${mgeFirst}
+    mgehigh=${mgeSecond}
+  else
+    mgehigh=${mgeFirst}
+    mgelow=${mgeSecond}
+  fi 
+fi
+
 if [ ! -e ${output}/mgelow.nii.gz ] && [ -e ${mgelow} ] && [ "${mgelow}" != "" ]; then
   echo "  using mgelow:"
   echo "${mgelow}"
@@ -65,9 +85,12 @@ if [ ! -e ${output}/mgelow.nii.gz ] && [ -e ${mgelow} ] && [ "${mgelow}" != "" ]
      runit qit --load ${workflow}/params/Common/transform.json \
        --reference ${ref} --input ${output}/mgelow.nii.gz --output ${output}/mgelow.nii.gz
   fi
+  
+  runit cp $(echo ${mgelow} | sed 's/nii.gz/json/g') ${output}/mgelow.json
+else
+  echo "no mgelow found!"
 fi
 
-mgehigh="$(find ${nifti} \( -path '*MGE_2echo_15_timePoints_*_e1a.nii.gz' \) -print -quit)"
 if [ ! -e ${output}/mgehigh.nii.gz ] && [ -e ${mgehigh} ] && [ "${mgehigh}" != "" ]; then
   echo "  using mgehigh:"
   echo "${mgehigh}"
@@ -84,6 +107,10 @@ if [ ! -e ${output}/mgehigh.nii.gz ] && [ -e ${mgehigh} ] && [ "${mgehigh}" != "
      runit qit --load ${workflow}/params/Common/transform.json \
        --reference ${ref} --input ${output}/mgehigh.nii.gz --output ${output}/mgehigh.nii.gz
   fi
+
+  runit cp $(echo ${mgehigh} | sed 's/nii.gz/json/g') ${output}/mgehigh.json
+else
+  echo "no mgehigh found!"
 fi
 
 t1rare="$(find ${nifti} \( -path '*T1map_RARE*.nii.gz' \) -print -quit)"

@@ -96,10 +96,10 @@ if [ ""${source} != "" ]; then
   if [ ! -e ${case}/native.dicom ]; then
     echo "  using source: ${source}"
     mkdir -p ${case}
-	  tmp=${case}/native.dicom.tmp.${RANDOM}
+    tmp=${case}/native.dicom.tmp.${RANDOM}
     cp -r ${source} ${tmp}
     chmod -R u+w ${tmp}
-	  runit bash ${workflow}/SpanAuxDicomFix.sh ${tmp}
+    runit bash ${workflow}/SpanAuxDicomFix.sh ${tmp}
     mv ${tmp} ${case}/native.dicom
   fi
 fi
@@ -151,7 +151,7 @@ if [ ! -e native.denoise ]; then
 
   for p in adc t2 t1rare mgelow mgehigh t2star; do
     runit bash ${workflow}/SpanAuxDenoise.sh \
-			 native.import/${p}.nii.gz  ${tmp}/${p}.nii.gz
+       native.import/${p}.nii.gz  ${tmp}/${p}.nii.gz
   done
 
   runit cp native.import/t2.txt ${tmp}
@@ -168,28 +168,28 @@ if [ ! -e native.fit ]; then
   mkdir -p ${tmp}
 
   for m in adc t2; do
-		runit ${qitcmd} VolumeExpDecayFit \
+    runit ${qitcmd} VolumeExpDecayFit \
       --skipFirstThresh 7 \
-			--input       native.denoise/${m}.nii.gz \
-			--varying     native.denoise/${m}.txt \
-			--outputAlpha ${tmp}/${m}_base.nii.gz \
-			--outputBeta  ${tmp}/${m}_rate.nii.gz \
-			--outputError ${tmp}/${m}_rmse.nii.gz \
-			--outputSnr   ${tmp}/${m}_snr.nii.gz
-		runit ${qitcmd} VolumeReduce \
+      --input       native.denoise/${m}.nii.gz \
+      --varying     native.denoise/${m}.txt \
+      --outputAlpha ${tmp}/${m}_base.nii.gz \
+      --outputBeta  ${tmp}/${m}_rate.nii.gz \
+      --outputError ${tmp}/${m}_rmse.nii.gz \
+      --outputSnr   ${tmp}/${m}_snr.nii.gz
+    runit ${qitcmd} VolumeReduce \
       --method Mean \
-			--input  native.denoise/${m}.nii.gz \
-			--output ${tmp}/${m}_mean.nii.gz
-		for p in mean; do
-			runit N4BiasFieldCorrection \
-				-i ${tmp}/${m}_${p}.nii.gz \
-				-w ${tmp}/${m}_${p}.nii.gz \
-				-o ${tmp}/${m}_${p}.nii.gz
-		done
-		runit ${qitcmd} VolumeSegmentForeground \
-			--input  native.denoise/${m}.nii.gz \
-			--output ${tmp}/${m}_mask.nii.gz \
-			--report ${tmp}/${m}_report.csv
+      --input  native.denoise/${m}.nii.gz \
+      --output ${tmp}/${m}_mean.nii.gz
+    for p in mean; do
+      runit N4BiasFieldCorrection \
+        -i ${tmp}/${m}_${p}.nii.gz \
+        -w ${tmp}/${m}_${p}.nii.gz \
+        -o ${tmp}/${m}_${p}.nii.gz
+    done
+    runit ${qitcmd} VolumeSegmentForeground \
+      --input  native.denoise/${m}.nii.gz \
+      --output ${tmp}/${m}_mask.nii.gz \
+      --report ${tmp}/${m}_report.csv
   done
 
   mv ${tmp} native.fit
@@ -203,11 +203,11 @@ if [ ! -e native.mask/brain.mask.nii.gz ]; then
 
   # We only have a deep learning brain extractor for mice
   if [ ${species} == "mouse" ]; then
-		runit bash ${workflow}/SpanAuxSegmentBrainLearn.sh \
-			native.fit ${tmp}/brain.mask.nii.gz
+    runit bash ${workflow}/SpanAuxSegmentBrainLearn.sh \
+      native.fit ${tmp}/brain.mask.nii.gz
   else
-		runit bash ${workflow}/SpanAuxSegmentBrainRule.sh \
-			native.fit ${tmp}/brain.mask.nii.gz
+    runit bash ${workflow}/SpanAuxSegmentBrainRule.sh \
+      native.fit ${tmp}/brain.mask.nii.gz
   fi
 
   mv ${tmp} native.mask
@@ -235,21 +235,21 @@ if [ ! -e native.reg ]; then
   tmp=native.reg.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-	echo "extracting registration target"
-	runit ${qitcmd} VolumeMask \
-		--input native.harm/t2_rate.nii.gz \
-		--mask native.mask/brain.mask.nii.gz \
-		--output ${tmp}/native.nii.gz
+  echo "extracting registration target"
+  runit ${qitcmd} VolumeMask \
+    --input native.harm/t2_rate.nii.gz \
+    --mask native.mask/brain.mask.nii.gz \
+    --output ${tmp}/native.nii.gz
 
-	echo "performing registration"
-	runit ${qitcmd} VolumeRegisterLinearAnts \
-		--rigid \
-		--input ${tmp}/native.nii.gz \
-		--ref ${data}/${species}/brain.nii.gz \
-		--output ${tmp}/work
+  echo "performing registration"
+  runit ${qitcmd} VolumeRegisterLinearAnts \
+    --rigid \
+    --input ${tmp}/native.nii.gz \
+    --ref ${data}/${species}/brain.nii.gz \
+    --output ${tmp}/work
 
-	mv ${tmp}/work/* ${tmp}
-	rm -rf ${tmp}/work
+  mv ${tmp}/work/* ${tmp}
+  rm -rf ${tmp}/work
 
   mv ${tmp} native.reg
 
@@ -257,191 +257,44 @@ fi
 
 for p in fit harm; do
 
-	if [ ! -e standard.${p} ]; then
+  if [ ! -e standard.${p} ]; then
 
-		tmp=standard.${p}.tmp.${RANDOM}
-		mkdir -p ${tmp}
+    tmp=standard.${p}.tmp.${RANDOM}
+    mkdir -p ${tmp}
 
-		for m in {t2,adc}_{base,rate}; do
+    for m in {t2,adc}_{base,rate}; do
 
-			runit ${qitcmd} VolumeTransform \
-				--input native.${p}/${m}.nii.gz \
-				--affine native.reg/xfm.txt \
-				--reference ${data}/${species}/brain.nii.gz \
-				--output ${tmp}/${m}.nii.gz 
+      runit ${qitcmd} VolumeTransform \
+        --input native.${p}/${m}.nii.gz \
+        --affine native.reg/xfm.txt \
+        --reference ${data}/${species}/brain.nii.gz \
+        --output ${tmp}/${m}.nii.gz 
 
-		done
+    done
 
-		mv ${tmp} standard.${p}
+    mv ${tmp} standard.${p}
 
-	fi
+  fi
 done
 
 if [ ! -e standard.denoise ]; then
 
-	tmp=standard.denoise.tmp.${RANDOM}
-	mkdir -p ${tmp}
+  tmp=standard.denoise.tmp.${RANDOM}
+  mkdir -p ${tmp}
 
-	for m in native.denoise/*.nii.gz; do
+  for m in native.denoise/*.nii.gz; do
 
-		runit ${qitcmd} VolumeTransform \
-			--input ${m} \
-			--affine native.reg/xfm.txt \
-			--reference ${data}/${species}/brain.nii.gz \
-			--output ${tmp}/$(basename ${m})
+    runit ${qitcmd} VolumeTransform \
+      --input ${m} \
+      --affine native.reg/xfm.txt \
+      --reference ${data}/${species}/brain.nii.gz \
+      --output ${tmp}/$(basename ${m})
 
-	done
+  done
 
   cp native.denoise/*.txt ${tmp}
 
-	mv ${tmp} standard.denoise
-
-fi
-
-if [ ! -e standard.manual/mask.nii.gz ]; then
-
-	mkdir -p standard.manual
-
-  runit ${qitcmd} VolumeFuse \
-    --input standard.denoise/mge{low,high}.nii.gz \
-    --output-cat standard.manual/mgemax.nii.gz
-
-  runit ${qitcmd} VolumeReduce --method Max \
-    --input standard.manual/mgemax.nii.gz \
-    --output standard.manual/mgemax.nii.gz
-
-  echo ""
-  echo "  Manual intervention needed."
-  echo ""
-  echo "  Please create standard.manual/sag.nii.gz and rerun pipeline."
-  echo ""
-  exit 0
-
-fi
-
-
-if [ ! -e standard.bbb ]; then
-
-
-	tmp=standard.bbb.tmp.${RANDOM}
-	mkdir -p ${tmp}
-  
-  cp standard.seg/lesion.mask.nii.gz ${tmp}/lesion.nii.gz
-
-  runit ${qitcmd} MaskReorder \
-    --flipi \
-    --input ${tmp}/lesion.nii.gz \
-    --output ${tmp}/contra.nii.gz
-
-  runit ${qitcmd} MaskIntersection \
-    --left ${tmp}/contra.nii.gz \
-    --right standard.seg/tissue.mask.nii.gz \
-    --output ${tmp}/contra.nii.gz
-
-  runit ${qitcmd} MaskSet \
-    --input ${tmp}/lesion.nii.gz \
-    --label 2 \
-    --mask ${tmp}/contra.nii.gz \
-    --output ${tmp}/rois.nii.gz
-
-  runit ${qitcmd} MaskErode \
-    --num 2 \
-    --input ${tmp}/rois.nii.gz \
-    --output ${tmp}/rois.nii.gz
-
-  runit ${qitcmd} MaskSet \
-    --label 3 \
-    --mask standard.manual/mask.nii.gz \
-    --input ${tmp}/rois.nii.gz \
-    --output ${tmp}/rois.nii.gz
-
-  rm ${tmp}/{contra,lesion}.nii.gz
-
-  echo "index,name" > ${tmp}/rois.csv
-  echo "1,lesion" >> ${tmp}/rois.csv
-  echo "2,contra" >> ${tmp}/rois.csv
-  echo "3,sag" >> ${tmp}/rois.csv
- 
-  for n in t1rare adc t2 t2star mgelow mgehigh; do 
-    runit ${qitcmd} VolumeMeasureMulti \
-			--input standard.import/${n}.nii.gz \
-      --mask ${tmp}/rois.nii.gz \
-      --lookup ${tmp}/rois.csv \
-      --multiple \
-      --output ${tmp}/${n}.csv
-  done
-
-  echo "TR" > ${tmp}/vtr.txt
-	echo "2206.15" >> ${tmp}/vtr.txt
-	echo "2250" >> ${tmp}/vtr.txt
-	echo "2750" >> ${tmp}/vtr.txt
-	echo "4000" >> ${tmp}/vtr.txt
-	echo "7000" >> ${tmp}/vtr.txt
-	echo "12000" >> ${tmp}/vtr.txt
-
-  for t in lesion contra sag; do 
-    echo "${t}" > ${tmp}/${t}-tmp.txt
-    cat ${tmp}/t1rare.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
-    paste -d' ' ${tmp}/vtr.txt ${tmp}/${t}-tmp.txt > ${tmp}/vtr-paste.txt
-    mv ${tmp}/vtr-paste.txt ${tmp}/vtr.txt
-    rm ${tmp}/${t}-tmp.txt
-  done
-
-  echo "index" > ${tmp}/shortTE.txt
-  echo "0" >> ${tmp}/shortTE.txt
-  echo "1" >> ${tmp}/shortTE.txt
-  echo "2" >> ${tmp}/shortTE.txt
-  echo "3" >> ${tmp}/shortTE.txt
-  echo "4" >> ${tmp}/shortTE.txt
-  echo "5" >> ${tmp}/shortTE.txt
-  echo "6" >> ${tmp}/shortTE.txt
-  echo "7" >> ${tmp}/shortTE.txt
-  echo "8" >> ${tmp}/shortTE.txt
-  echo "9" >> ${tmp}/shortTE.txt
-  echo "10" >> ${tmp}/shortTE.txt
-  echo "11" >> ${tmp}/shortTE.txt
-  echo "12" >> ${tmp}/shortTE.txt
-  echo "13" >> ${tmp}/shortTE.txt
-  echo "14 " >> ${tmp}/shortTE.txt
-
-  for t in lesion contra sag; do 
-    echo "${t}" > ${tmp}/${t}-tmp.txt
-    cat ${tmp}/mgelow.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
-    paste -d' ' ${tmp}/shortTE.txt ${tmp}/${t}-tmp.txt > ${tmp}/shortTE-paste.txt
-    mv ${tmp}/shortTE-paste.txt ${tmp}/shortTE.txt
-    rm ${tmp}/${t}-tmp.txt
-  done
-
-  echo "index" > ${tmp}/longTE.txt
-  echo "0" >> ${tmp}/longTE.txt
-  echo "1" >> ${tmp}/longTE.txt
-  echo "2" >> ${tmp}/longTE.txt
-  echo "3" >> ${tmp}/longTE.txt
-  echo "4" >> ${tmp}/longTE.txt
-  echo "5" >> ${tmp}/longTE.txt
-  echo "6" >> ${tmp}/longTE.txt
-  echo "7" >> ${tmp}/longTE.txt
-  echo "8" >> ${tmp}/longTE.txt
-  echo "9" >> ${tmp}/longTE.txt
-  echo "10" >> ${tmp}/longTE.txt
-  echo "11" >> ${tmp}/longTE.txt
-  echo "12" >> ${tmp}/longTE.txt
-  echo "13" >> ${tmp}/longTE.txt
-  echo "14 " >> ${tmp}/longTE.txt
-
-  for t in lesion contra sag; do 
-    echo "${t}" > ${tmp}/${t}-tmp.txt
-    cat ${tmp}/mgehigh.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
-    paste -d' ' ${tmp}/longTE.txt ${tmp}/${t}-tmp.txt > ${tmp}/longTE-paste.txt
-    mv ${tmp}/longTE-paste.txt ${tmp}/longTE.txt
-    rm ${tmp}/${t}-tmp.txt
-  done
-
-  echo "name,value" >> ${tmp}/metrics.csv
-  echo "lesion_ki,$(KiCalc ${tmp}/{vtr,shortTE,longTE}.txt -l)" >> ${tmp}/metrics.csv
-  echo "contra_ki,$(KiCalc ${tmp}/{vtr,shortTE,longTE}.txt -c)" >> ${tmp}/metrics.csv
-
-	mv ${tmp} standard.bbb
+  mv ${tmp} standard.denoise
 
 fi
 
@@ -450,20 +303,20 @@ if [ ! -e standard.mask ]; then
   tmp=standard.mask.tmp.${RANDOM}
   mkdir -p ${tmp}
 
-	runit ${qitcmd} MaskTransform \
-		--input native.mask/brain.mask.nii.gz \
-		--affine native.reg/xfm.txt \
-		--reference ${data}/${species}/brain.nii.gz \
-		--output ${tmp}/raw.mask.nii.gz
+  runit ${qitcmd} MaskTransform \
+    --input native.mask/brain.mask.nii.gz \
+    --affine native.reg/xfm.txt \
+    --reference ${data}/${species}/brain.nii.gz \
+    --output ${tmp}/raw.mask.nii.gz
 
-	runit ${qitcmd} MaskFilterMode \
-		--input ${tmp}/raw.mask.nii.gz \
-		--output ${tmp}/filter.mask.nii.gz
+  runit ${qitcmd} MaskFilterMode \
+    --input ${tmp}/raw.mask.nii.gz \
+    --output ${tmp}/filter.mask.nii.gz
 
-	runit ${qitcmd} MaskIntersection \
-		--left ${tmp}/filter.mask.nii.gz \
-		--right ${data}/${species}/restrict.mask.nii.gz \
-		--output ${tmp}/brain.mask.nii.gz
+  runit ${qitcmd} MaskIntersection \
+    --left ${tmp}/filter.mask.nii.gz \
+    --right ${data}/${species}/restrict.mask.nii.gz \
+    --output ${tmp}/brain.mask.nii.gz
 
   mv ${tmp} standard.mask
 
@@ -481,26 +334,26 @@ fi
 
 if [ ! -e native.seg ]; then
 
-	tmp=native.seg.tmp.${RANDOM}
-	mkdir -p ${tmp}
+  tmp=native.seg.tmp.${RANDOM}
+  mkdir -p ${tmp}
 
-	for m in csf lesion tissue; do
+  for m in csf lesion tissue; do
 
-		runit ${qitcmd} MaskTransform \
-			--input standard.seg/${m}.mask.nii.gz \
-			--affine native.reg/invxfm.txt \
-			--reference native.harm/t2_rate.nii.gz \
-			--output ${tmp}/${m}.mask.nii.gz 
+    runit ${qitcmd} MaskTransform \
+      --input standard.seg/${m}.mask.nii.gz \
+      --affine native.reg/invxfm.txt \
+      --reference native.harm/t2_rate.nii.gz \
+      --output ${tmp}/${m}.mask.nii.gz 
 
-	done
+  done
 
-	mv ${tmp} native.${p}
+  mv ${tmp} native.seg
 
 fi
 
 if [ ! -e standard.midline ]; then
 
-	runit ${qitcmd} ${workflow}/SpanAuxMidline.py \
+  runit ${qitcmd} ${workflow}/SpanAuxMidline.py \
     standard.mask/brain.mask.nii.gz \
     standard.seg/tissue.mask.nii.gz \
     standard.seg/csf.mask.nii.gz \
@@ -538,6 +391,155 @@ if [ ! -e standard.label ]; then
   mv ${tmp} standard.label
 fi
 
+
+if [ -e native.denoise/mgelow.nii.gz ]; then
+
+	if [ ! -e standard.manual/mask.nii.gz ]; then
+
+		mkdir -p standard.manual
+
+		runit ${qitcmd} VolumeFuse \
+			--input standard.denoise/mge{low,high}.nii.gz \
+			--output-cat standard.manual/mgemax.nii.gz
+
+		runit ${qitcmd} VolumeReduce --method Max \
+			--input standard.manual/mgemax.nii.gz \
+			--output standard.manual/mgemax.nii.gz
+
+		echo ""
+		echo "  Manual intervention needed."
+		echo ""
+		echo "  Please create standard.manual/sag.nii.gz and rerun pipeline."
+		echo ""
+		exit 0
+
+	fi
+
+	if [ ! -e standard.bbb ]; then
+
+		tmp=standard.bbb.tmp.${RANDOM}
+		mkdir -p ${tmp}
+		
+		cp standard.seg/lesion.mask.nii.gz ${tmp}/lesion.nii.gz
+
+		runit ${qitcmd} MaskReorder \
+			--flipi \
+			--input ${tmp}/lesion.nii.gz \
+			--output ${tmp}/contra.nii.gz
+
+		runit ${qitcmd} MaskIntersection \
+			--left ${tmp}/contra.nii.gz \
+			--right standard.seg/tissue.mask.nii.gz \
+			--output ${tmp}/contra.nii.gz
+
+		runit ${qitcmd} MaskSet \
+			--input ${tmp}/lesion.nii.gz \
+			--label 2 \
+			--mask ${tmp}/contra.nii.gz \
+			--output ${tmp}/rois.nii.gz
+
+		runit ${qitcmd} MaskErode \
+			--num 2 \
+			--input ${tmp}/rois.nii.gz \
+			--output ${tmp}/rois.nii.gz
+
+		runit ${qitcmd} MaskSet \
+			--label 3 \
+			--mask standard.manual/mask.nii.gz \
+			--input ${tmp}/rois.nii.gz \
+			--output ${tmp}/rois.nii.gz
+
+		rm ${tmp}/{contra,lesion}.nii.gz
+
+		echo "index,name" > ${tmp}/rois.csv
+		echo "1,lesion" >> ${tmp}/rois.csv
+		echo "2,contra" >> ${tmp}/rois.csv
+		echo "3,sag" >> ${tmp}/rois.csv
+	 
+		for n in t1rare adc t2 t2star mgelow mgehigh; do 
+			runit ${qitcmd} VolumeMeasureMulti \
+				--input standard.denoise/${n}.nii.gz \
+				--mask ${tmp}/rois.nii.gz \
+				--lookup ${tmp}/rois.csv \
+				--multiple \
+				--output ${tmp}/${n}.csv
+		done
+
+		echo "TR" > ${tmp}/vtr.txt
+		echo "2206.15" >> ${tmp}/vtr.txt
+		echo "2250" >> ${tmp}/vtr.txt
+		echo "2750" >> ${tmp}/vtr.txt
+		echo "4000" >> ${tmp}/vtr.txt
+		echo "7000" >> ${tmp}/vtr.txt
+		echo "12000" >> ${tmp}/vtr.txt
+
+		for t in lesion contra sag; do 
+			echo "${t}" > ${tmp}/${t}-tmp.txt
+			cat ${tmp}/t1rare.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
+			paste -d' ' ${tmp}/vtr.txt ${tmp}/${t}-tmp.txt > ${tmp}/vtr-paste.txt
+			mv ${tmp}/vtr-paste.txt ${tmp}/vtr.txt
+			rm ${tmp}/${t}-tmp.txt
+		done
+
+		echo "index" > ${tmp}/shortTE.txt
+		echo "0" >> ${tmp}/shortTE.txt
+		echo "1" >> ${tmp}/shortTE.txt
+		echo "2" >> ${tmp}/shortTE.txt
+		echo "3" >> ${tmp}/shortTE.txt
+		echo "4" >> ${tmp}/shortTE.txt
+		echo "5" >> ${tmp}/shortTE.txt
+		echo "6" >> ${tmp}/shortTE.txt
+		echo "7" >> ${tmp}/shortTE.txt
+		echo "8" >> ${tmp}/shortTE.txt
+		echo "9" >> ${tmp}/shortTE.txt
+		echo "10" >> ${tmp}/shortTE.txt
+		echo "11" >> ${tmp}/shortTE.txt
+		echo "12" >> ${tmp}/shortTE.txt
+		echo "13" >> ${tmp}/shortTE.txt
+		echo "14 " >> ${tmp}/shortTE.txt
+
+		for t in lesion contra sag; do 
+			echo "${t}" > ${tmp}/${t}-tmp.txt
+			cat ${tmp}/mgelow.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
+			paste -d' ' ${tmp}/shortTE.txt ${tmp}/${t}-tmp.txt > ${tmp}/shortTE-paste.txt
+			mv ${tmp}/shortTE-paste.txt ${tmp}/shortTE.txt
+			rm ${tmp}/${t}-tmp.txt
+		done
+
+		echo "index" > ${tmp}/longTE.txt
+		echo "0" >> ${tmp}/longTE.txt
+		echo "1" >> ${tmp}/longTE.txt
+		echo "2" >> ${tmp}/longTE.txt
+		echo "3" >> ${tmp}/longTE.txt
+		echo "4" >> ${tmp}/longTE.txt
+		echo "5" >> ${tmp}/longTE.txt
+		echo "6" >> ${tmp}/longTE.txt
+		echo "7" >> ${tmp}/longTE.txt
+		echo "8" >> ${tmp}/longTE.txt
+		echo "9" >> ${tmp}/longTE.txt
+		echo "10" >> ${tmp}/longTE.txt
+		echo "11" >> ${tmp}/longTE.txt
+		echo "12" >> ${tmp}/longTE.txt
+		echo "13" >> ${tmp}/longTE.txt
+		echo "14 " >> ${tmp}/longTE.txt
+
+		for t in lesion contra sag; do 
+			echo "${t}" > ${tmp}/${t}-tmp.txt
+			cat ${tmp}/mgehigh.csv | grep mean | grep ${t} | awk -F, '{print $4}' >> ${tmp}/${t}-tmp.txt
+			paste -d' ' ${tmp}/longTE.txt ${tmp}/${t}-tmp.txt > ${tmp}/longTE-paste.txt
+			mv ${tmp}/longTE-paste.txt ${tmp}/longTE.txt
+			rm ${tmp}/${t}-tmp.txt
+		done
+
+		echo "name,value" >> ${tmp}/metrics.csv
+		echo "lesion_ki,$(KiCalc ${tmp}/{vtr,shortTE,longTE}.txt -l)" >> ${tmp}/metrics.csv
+		echo "contra_ki,$(KiCalc ${tmp}/{vtr,shortTE,longTE}.txt -c)" >> ${tmp}/metrics.csv
+
+		mv ${tmp} standard.bbb
+
+	fi
+fi
+
 if [ ! -e standard.map ]; then
 
   tmp=standard.map.tmp.${RANDOM}
@@ -549,28 +551,32 @@ if [ ! -e standard.map ]; then
 
   cp standard.midline/map.csv ${tmp}/midline.csv
 
+  if [ -e standard.bbb/metrics.csv ]; then
+    cp standard.bbb/metrics.csv ${tmp}/bbb.csv
+  fi
+
   for label in classes hemis_classes; do
-		runit ${qitcmd} MaskRegionsMeasure \
-			--basic \
-			--regions standard.label/${label}.nii.gz \
-			--lookup standard.label/${label}.csv \
-			--volume ${label}_adc_rate=standard.fit/adc_rate.nii.gz \
-							 ${label}_t2_rate=standard.fit/t2_rate.nii.gz \
-							 ${label}_adc_base=standard.fit/adc_base.nii.gz \
-							 ${label}_t2_base=standard.fit/t2_base.nii.gz \
-							 ${label}_adc_rate_harm=standard.harm/adc_rate.nii.gz \
-							 ${label}_t2_rate_harm=standard.harm/t2_rate.nii.gz \
-							 ${label}_adc_base_harm=standard.harm/adc_base.nii.gz \
-							 ${label}_t2_base_harm=standard.harm/t2_base.nii.gz \
-			--mask standard.mask/brain.mask.nii.gz \
-			--output ${tmp}
+    runit ${qitcmd} MaskRegionsMeasure \
+      --basic \
+      --regions standard.label/${label}.nii.gz \
+      --lookup standard.label/${label}.csv \
+      --volume ${label}_adc_rate=standard.fit/adc_rate.nii.gz \
+               ${label}_t2_rate=standard.fit/t2_rate.nii.gz \
+               ${label}_adc_base=standard.fit/adc_base.nii.gz \
+               ${label}_t2_base=standard.fit/t2_base.nii.gz \
+               ${label}_adc_rate_harm=standard.harm/adc_rate.nii.gz \
+               ${label}_t2_rate_harm=standard.harm/t2_rate.nii.gz \
+               ${label}_adc_base_harm=standard.harm/adc_base.nii.gz \
+               ${label}_t2_base_harm=standard.harm/t2_base.nii.gz \
+      --mask standard.mask/brain.mask.nii.gz \
+      --output ${tmp}
   done
 
   for n in classes hemis hemis_classes classes_regions hemis_classes_regions; do
-		runit ${qitcmd} MaskMeasure \
-			--input standard.label/${n}.nii.gz \
-			--lookup standard.label/${n}.csv \
-			--output ${tmp}/volumetrics_by_${n}.csv
+    runit ${qitcmd} MaskMeasure \
+      --input standard.label/${n}.nii.gz \
+      --lookup standard.label/${n}.csv \
+      --output ${tmp}/volumetrics_by_${n}.csv
   done
 
   mv ${tmp} standard.map
