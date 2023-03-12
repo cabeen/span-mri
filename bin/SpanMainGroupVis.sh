@@ -53,6 +53,10 @@ for sdir in ${input}/*/*/*; do
   fi
 done
 
+for f in ${output}/vis/*; do
+  convert ${f} -crop 1024x512+0+255 ${f}
+done
+
 echo "finished"
 
 ################################################################################
