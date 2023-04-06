@@ -133,7 +133,7 @@ if [ ! -e ${output}/t1rare.nii.gz ] && [ -e ${t1rare} ] && [ "${t1rare}" != "" ]
 fi
 
 adc="$(find ${nifti} \( -path '*ADC*.nii.gz' -or -path '*Diffusion*.nii.gz' -or -path '*DtiStandard*.nii.gz' \) -print -quit)"
-if [ ! -e ${output}/adc.nii.gz ] && [ -e ${adc} ]; then
+if [ ! -e ${output}/adc.nii.gz ] && [ -e "${adc}" ]; then
   adc="$(find ${nifti} \( -path '*ADC*.nii.gz' -or -path '*Diffusion*.nii.gz' -or -path '*DtiStandard*.nii.gz' \) )"
   echo "  using adc:"
   echo "${adc}"
@@ -156,7 +156,7 @@ if [ ! -e ${output}/adc.nii.gz ] && [ -e ${adc} ]; then
 fi
 
 t2map="$(find ${nifti} \( -path '*T2_map*.nii.gz' \) -print -quit)"
-if [ ! -e ${output}/t2.nii.gz ] && [ -e ${at2map} ]; then
+if [ ! -e ${output}/t2.nii.gz ] && [ -e "${at2map}" ]; then
   t2map="$(find ${nifti} \( -path '*T2_map*.nii.gz' \))"
 	echo "  using t2maps:"
 	echo "${t2map}"
@@ -176,7 +176,7 @@ if [ ! -e ${output}/t2.nii.gz ] && [ -e ${at2map} ]; then
 fi
 
 t2star="$(find ${nifti} \( -path '*T2star_map*.nii.gz' \) -print -quit)"
-if [ ! -e ${output}/t2star.nii.gz ] && [ -e ${t2star} ]; then
+if [ ! -e ${output}/t2star.nii.gz ] && [ -e "${t2star}" ]; then
   t2star="$(find ${nifti} \( -path '*T2star_map*.nii.gz' \))"
 	echo "  using t2star:"
 	echo "${t2star}"
