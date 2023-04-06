@@ -457,12 +457,14 @@ if [ -e native.denoise/mgelow.nii.gz ]; then
 		echo "3,sag" >> ${tmp}/rois.csv
 	 
 		for n in t1rare adc t2 t2star mgelow mgehigh; do 
-			runit ${qitcmd} VolumeMeasureMulti \
-				--input standard.denoise/${n}.nii.gz \
-				--mask ${tmp}/rois.nii.gz \
-				--lookup ${tmp}/rois.csv \
-				--multiple \
-				--output ${tmp}/${n}.csv
+      if [ -e standard.denoise/${n}.nii.gz ]; then
+				runit ${qitcmd} VolumeMeasureMulti \
+					--input standard.denoise/${n}.nii.gz \
+					--mask ${tmp}/rois.nii.gz \
+					--lookup ${tmp}/rois.csv \
+					--multiple \
+					--output ${tmp}/${n}.csv
+      fi
 		done
 
 		echo "TR" > ${tmp}/vtr.txt
