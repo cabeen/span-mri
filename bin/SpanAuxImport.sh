@@ -156,7 +156,7 @@ if [ ! -e ${output}/adc.nii.gz ] && [ -e "${adc}" ]; then
 fi
 
 t2map="$(find ${nifti} \( -path '*T2_map*.nii.gz' \) -print -quit)"
-if [ ! -e ${output}/t2.nii.gz ] && [ -e "${at2map}" ]; then
+if [ ! -e ${output}/t2.nii.gz ] && [ -e "${t2map}" ]; then
   t2map="$(find ${nifti} \( -path '*T2_map*.nii.gz' \))"
 	echo "  using t2maps:"
 	echo "${t2map}"
