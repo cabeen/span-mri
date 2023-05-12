@@ -63,7 +63,7 @@ if [ ! -e ${output}/rare.nii.gz ] && [ -e ${rare} ] && [ "${rare}" != "" ]; then
   fi
 fi
 
-adc="$(find ${nifti} \( -path '*ADC*.nii.gz' -or -path '*Diffusion*.nii.gz' -or -path '*DtiStandard*.nii.gz' \) -print -quit)"
+adc="$(find ${nifti} \( -path '*ADC*.nii.gz' -or -path '*Diffusion*.nii.gz' -or -path '*DtiStandard*.nii.gz' -or -path '*DWI*.nii.gz' \) -print -quit)"
 if [ ! -e ${output}/adc.nii.gz ] && [ -e ${adc} ]; then
   adc="$(find ${nifti} \( -path '*ADC*.nii.gz' -or -path '*Diffusion*.nii.gz' -or -path '*DtiStandard*.nii.gz' \) )"
   echo "  using adc:"

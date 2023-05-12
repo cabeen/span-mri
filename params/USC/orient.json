@@ -1,0 +1,8 @@
+{
+  "name": "VolumeReorder",
+  "parameters": {
+    "flipi": true,
+    "flipj": true,
+    "swapjk": true
+  }
+}
