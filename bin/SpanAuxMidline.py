@@ -58,7 +58,8 @@ def main():
 
     region_mask = MaskUtils.and(csf_mask, middle_mask)
     region_mask = MaskUtils.greater(region_mask, thresh)
-    region_mask = MaskHull.apply(region_mask)
+    region_mask = MaskUtils.binarize(region_mask)
+    # region_mask = MaskHull.apply(region_mask)
     centroids = MaskCentroids.apply(region_mask)
 
     landmarks = VectsSource.create() 
