@@ -1,18 +1,62 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Volume Normalization
 #
-#    A script for grouping results across individuals
+#  Purpose:
+#    Post-processes a group metrics table to normalize tissue, CSF, and
+#    lesion volumes across sites and species. Computes:
+#    1. Total intracranial volume (tissue + CSF + lesion)
+#    2. Volume fractions (each compartment / total)
+#    3. Global normalization factor (mean total volume per species)
+#    4. Site-specific normalization factor (mean total volume per species+site)
+#    5. Normalized volumes adjusted for inter-site brain size differences
+#
+#  Inputs:
+#    $1 — Input CSV table (group metrics from SpanMainGroup.sh)
+#    $2 — Output CSV table (can be same as input for in-place update)
+#
+#  Outputs:
+#    Updated CSV with additional columns:
+#      volume_total, volumetrics_by_classes_fraction_{tissue,csf,lesion},
+#      normalization_factor, volumetrics_by_classes_normalized_volume_{tissue,csf,lesion},
+#      normalized_volume_total
+#
+#  Dependencies: QIT (TableSelect, TableMath, TableStats, TableMerge)
 #
 #  Author: Ryan Cabeen
 #
 ##############################################################################
 
-if [ $# != 2 ]; then
-	echo "$(basename $0) input.csv output.csv"
-  exit
-fi
+name=$(basename $0)
+
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Normalize tissue, CSF, and lesion volumes across sites and species.
+  Computes total intracranial volume, volume fractions, and site-specific
+  normalization factors.
+
+Usage:
+
+  ${name} <input.csv> <output.csv>
+
+Inputs:
+
+  input.csv   — Group metrics table (from SpanMainGroup.sh)
+  output.csv  — Output table with normalized volumes (can be same as input)
+
+Author: Ryan Cabeen
+"
+    exit 1
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -ne 2 ]; then usage; fi
 
 input=$1
 output=$2

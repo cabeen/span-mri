@@ -1,18 +1,54 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Eye Segmentation
 #
-#    A script for eye segmentation.  The input should be a T2 baseline.
+#  Purpose:
+#    Detects and segments the eyes from a T2 baseline image using blob
+#    detection. Eyes appear as dark spherical structures in T2-weighted
+#    images. Uses Gaussian smoothing, Hessian-based dark blob detection,
+#    Otsu thresholding, and selects the two largest connected components.
+#    Outputs the centroids of detected eyes.
+#
+#  Inputs:
+#    $1 — Input T2 baseline NIfTI volume (.nii.gz)
+#    $2 — Output eye centroid coordinates (.txt)
+#
+#  Dependencies: QIT
 #
 #  Author: Ryan Cabeen
 #
 ##############################################################################
 
-if [ $# -lt "1" ]; then
-    echo "Usage: ${name} <input.nii.gz> <output.txt>"
+name=$(basename $0)
+
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Detect and segment eyes from a T2 baseline image using blob detection.
+  Uses Gaussian smoothing, Hessian-based dark blob detection, and Otsu
+  thresholding to identify the two largest connected components (eyes).
+
+Usage:
+
+  ${name} <input.nii.gz> <output.txt>
+
+Inputs:
+
+  input.nii.gz  — T2 baseline NIfTI volume
+  output.txt    — Output eye centroid coordinates
+
+Author: Ryan Cabeen
+"
     exit 1
-fi
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -lt "2" ]; then usage; fi
 
 function runit
 {

@@ -1,7 +1,29 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Lesion Segmentation Threshold Evaluation
+#
+#  Purpose:
+#    Evaluates lesion segmentation across a range of T2 rate thresholds
+#    to help optimize the threshold parameter for different datasets.
+#    Tests 34 thresholds from 0.30 to 0.95 with both brain-restricted
+#    and lesion-restricted priors, producing segmentation results,
+#    midline metrics, regional volumes, and visualizations for each.
+#
+#  Inputs:
+#    --subject <dir>  Subject directory with completed standard.harm and
+#                     standard.mask (must have already run through pipeline)
+#
+#  Outputs:
+#    evaluation/mask.{brain,lesion}.thresh.<NNN>/ — Per-threshold results:
+#      standard.seg/   — Lesion/CSF/tissue segmentation
+#      standard.midline/ — Midline shift metrics
+#      standard.map/   — Volume and intensity measurements
+#      standard.vis/   — Mosaic visualizations
+#
+#  Dependencies: QIT
+#
+#  Author: Ryan Cabeen
 #
 ##############################################################################
 
@@ -13,8 +35,8 @@ Name: $(basename $0)
 Description:
 
   The SPAN Rodent MRI Analysis.  This program evaluates the lesion segmention.
-    
-Usage: 
+
+Usage:
 
   $(basename $0) --subject subject_dir
 

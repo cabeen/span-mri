@@ -1,9 +1,23 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — LONI IDA Data Import
 #
-#    A script for importing data downloaded from the LONI IDA
+#  Purpose:
+#    Imports data downloaded from the LONI Image & Data Archive (IDA).
+#    Unzips early and late timepoint archives, identifies mouse and rat
+#    subjects from CSV manifests, and organizes files into the standard
+#    source/{mouse,rat}/{early,late}/<subject_id>/ directory structure.
+#
+#  Inputs:
+#    $1 — Early timepoint ZIP archive
+#    $2 — Late timepoint ZIP archive
+#    $3 — Rat subject list CSV
+#    $4 — Mouse subject list CSV
+#    $5 — Cases directory (working directory for extraction)
+#    $6 — Source directory (final organized output)
+#
+#  Dependencies: unzip
 #
 #  Author: Ryan Cabeen
 #
@@ -13,10 +27,28 @@ workflow=$(cd $(dirname ${0}); cd ..; pwd -P)
 
 name=$(basename $0)
 
-if [ $# -ne "6" ]; then
-    echo "Usage: ${name} <early.zip> <late.zip> <rat.csv> <mouse.csv> <cases> <source>"
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Import data downloaded from the LONI Image & Data Archive (IDA).
+  Unzips early and late timepoint archives, identifies mouse and rat
+  subjects, and organizes into the standard directory structure.
+
+Usage:
+
+  ${name} <early.zip> <late.zip> <rat.csv> <mouse.csv> <cases_dir> <source_dir>
+
+Author: Ryan Cabeen
+"
     exit 1
-fi
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -ne "6" ]; then usage; fi
 
 echo "started"
 

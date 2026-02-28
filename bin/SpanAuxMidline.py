@@ -1,7 +1,46 @@
 #! /usr/bin/env qit
 ################################################################################
 #
-# SPAN Midline analysis
+#  SPAN Rodent MRI Analytics -- Midline Shift Analysis
+#
+#  Purpose:
+#    Quantifies midline shift caused by mass effect from ischemic stroke.
+#    Midline shift is a key clinical indicator of stroke severity, reflecting
+#    brain swelling that displaces structures across the midline.
+#
+#  Algorithm:
+#    1. Identify the CSF-filled midline region by intersecting the CSF mask
+#       with the atlas midline mask
+#    2. Compute the centroid of this midline CSF region
+#    3. Compare the centroid's position to the anatomical center defined by
+#       atlas landmarks to measure displacement
+#    4. Find the brain's lateral extent (leftmost and rightmost brain voxels)
+#       at the centroid's coronal position
+#    5. Compute metrics:
+#       - shift_mm: Euclidean distance from centroid to anatomical center
+#       - shift_percent: 200 * shift_mm / brain_width (percentage of width)
+#       - shift_ratio: min(left_dist, right_dist) / max(left_dist, right_dist)
+#       - shift_index: 2 * (right - left) / (right + left), laterality index
+#       - tissue/brain volume laterality indices for left vs right hemispheres
+#    6. Split the brain into hemispheres using the centroid and landmarks
+#
+#  Inputs:
+#    args[1] -- Brain mask in standard atlas space
+#    args[2] -- Tissue mask (brain minus CSF minus lesion)
+#    args[3] -- CSF mask
+#    args[4] -- Atlas directory (contains middle.mask.nii.gz and lm.txt)
+#    args[5] -- Output directory
+#
+#  Outputs:
+#    map.csv              -- Midline shift metrics (name,value pairs)
+#    centroid.txt         -- CSF midline centroid coordinates
+#    landmarks.txt        -- Key landmark points used for computation
+#    tissue.hemis.mask.nii.gz -- Tissue mask split by hemisphere
+#    brain.hemis.mask.nii.gz  -- Brain mask split by hemisphere
+#
+#  Dependencies: QIT (run via `qit` interpreter)
+#
+#  Author: Ryan Cabeen
 #
 ################################################################################
 
@@ -50,12 +89,17 @@ def main():
     csf_mask = Mask.read(csf_mask_fn)
     middle_mask = Mask.read(middle_mask_fn)
 
+    # Load atlas landmarks defining the anatomical center, lateral extents,
+    # and anterior/posterior/superior/inferior bounds of the brain
     Logging.info("loading landmarks")
     lms = [float(x) for x in open(lm_fn, "r").read().split()]
     xCenter, xLeft, xRight, yAnt, yPost, zCenter, zSup, zInf = lms
-    thresh = (xRight - xLeft) / 658
-    # with mouse voxel size = 0.00159387, this corresponds to more than 9 voxels
 
+    # Minimum size threshold for the midline CSF region (in world coordinates).
+    # Scaled from brain width; for mouse voxel size ~0.0016mm, this is ~9 voxels.
+    thresh = (xRight - xLeft) / 658
+
+    # Find the CSF within the midline region and filter by minimum size
     region_mask = MaskUtils.and(csf_mask, middle_mask)
     region_mask = MaskUtils.greater(region_mask, thresh)
     region_mask = MaskUtils.binarize(region_mask)
@@ -124,21 +168,23 @@ def main():
         for v in [shift,center,left,right,superior,inferior,anterior,posterior]:
             landmarks.add(v)
 
-        shift_x_estimate = shift.getX()
-        shift_x_center = center.getX()
-        shift_x_left = left.getX()
-        shift_x_right = right.getX()
-        shift_mm = shift.dist(center)
-        shift_lat = shift.getX() - center.getX()
-        shift_width = left.dist(right)
-        shift_percent = 200 * shift_mm / shift_width
-        shift_left = shift.dist(left)
-        shift_right = shift.dist(right)
+        # Compute midline shift metrics
+        shift_x_estimate = shift.getX()        # X coordinate of CSF centroid
+        shift_x_center = center.getX()          # X coordinate of anatomical center
+        shift_x_left = left.getX()              # X coordinate of leftmost brain voxel
+        shift_x_right = right.getX()            # X coordinate of rightmost brain voxel
+        shift_mm = shift.dist(center)            # Shift distance in mm
+        shift_lat = shift.getX() - center.getX() # Signed lateral displacement
+        shift_width = left.dist(right)           # Total brain width in mm
+        shift_percent = 200 * shift_mm / shift_width  # Shift as % of brain width
+        shift_left = shift.dist(left)            # Distance from centroid to left edge
+        shift_right = shift.dist(right)          # Distance from centroid to right edge
         shift_min = min(shift_left, shift_right)
         shift_max = max(shift_left, shift_right)
-        shift_ratio = shift_min / shift_max
-        shift_index = 2.0 * (shift_right - shift_left) / (shift_right + shift_left)
+        shift_ratio = shift_min / shift_max      # Symmetry ratio (1.0 = symmetric)
+        shift_index = 2.0 * (shift_right - shift_left) / (shift_right + shift_left)  # Laterality index
 
+        # Split tissue and brain masks into hemispheres and compute volume laterality
         tissue_hemis_mask = MaskUtils.split(tissue_mask, landmarks)
         tissue_vol_left = MaskUtils.volume(tissue_hemis_mask, 1)
         tissue_vol_right = MaskUtils.volume(tissue_hemis_mask, 2)

@@ -1,19 +1,53 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — DICOM Header Fix
 #
-#    A script for fixing dicom headers to merge header values for 
-#    ProtocolName and SeriesDescription. 
+#  Purpose:
+#    Fixes DICOM headers by merging ProtocolName and SeriesDescription into
+#    a single combined tag value. This ensures dcm2niix produces consistent,
+#    informative filenames during conversion, regardless of how different
+#    scanner vendors populate these fields. Works on individual files or
+#    entire directories.
+#
+#  Inputs:
+#    $1 — Input DICOM file or directory
+#    $2 — Optional: output location (copies input before modifying)
+#
+#  Dependencies: dcmdump, dcmodify (DCMTK)
 #
 #  Author: Ryan Cabeen
 #
 ##############################################################################
 
-if [ $# -lt "1" ]; then
-    echo "Usage: $(basename $0) <input> [optional_output]"
+name=$(basename $0)
+
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Fix DICOM headers by merging ProtocolName and SeriesDescription into
+  a combined tag value for consistent dcm2niix filenames.
+
+Usage:
+
+  ${name} <input> [output]
+
+Inputs:
+
+  input   — DICOM file or directory
+  output  — Optional: output location (copies input before modifying)
+
+Author: Ryan Cabeen
+"
     exit 1
-fi
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -lt "1" ]; then usage; fi
 
 function fixit
 {

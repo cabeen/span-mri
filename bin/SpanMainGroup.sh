@@ -1,9 +1,30 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Group Analysis
 #
-#    A script for grouping results across individuals
+#  Purpose:
+#    Aggregates individual subject results into group-level metric tables.
+#    Collects metrics from all completed subjects, merges with metadata,
+#    widens the table for cross-subject analysis, and applies volume
+#    normalization across sites and species.
+#
+#  Expected directory structure:
+#    Must be run from the project root containing a process/ directory
+#    with structure: process/{mouse,rat}/{early,late}/<subject_id>/
+#
+#  Inputs:
+#    process/ directory with completed subjects (having standard.vis)
+#
+#  Outputs:
+#    group/sids.txt         — Unique subject ID list
+#    group/tables/meta.csv  — Subject metadata (species, site, date, timepoint)
+#    group/tables/metrics.csv — Merged per-subject metrics
+#    group/table.csv        — Combined metadata + metrics (long format)
+#    group/table.wide.csv   — Final wide-format table with all metrics,
+#                             including normalized volumes
+#
+#  Dependencies: QIT (MapCat, TableSelect, TableMerge, TableWiden)
 #
 #  Author: Ryan Cabeen
 #
@@ -12,7 +33,34 @@
 mybin=$(cd $(dirname ${0}); pwd -P)
 name=$(basename $0)
 
-if [ ! -e process ]; then echo "process directory not found!"; exit; fi
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Aggregate individual subject results into group-level metric tables.
+  Must be run from the project root containing a process/ directory
+  with structure: process/{mouse,rat}/{early,late}/<subject_id>/
+
+Usage:
+
+  ${name} [--help]
+
+Outputs:
+
+  group/sids.txt         — Unique subject ID list
+  group/tables/meta.csv  — Subject metadata (species, site, date, timepoint)
+  group/table.wide.csv   — Final wide-format table with all metrics
+
+Author: Ryan Cabeen
+"
+    exit 1
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ ! -e process ]; then echo "process directory not found!"; usage; fi
 
 input=process
 output=group

@@ -1,10 +1,25 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — DICOM to NIfTI Conversion
 #
-#    A script for converting from dicom to nifti.  
-#    This assumes that dcm2niix is on the path
+#  Purpose:
+#    Converts a directory of DICOM files to NIfTI format using dcm2niix.
+#    Extracts the acquisition site name from DICOM JSON metadata and builds
+#    a comprehensive image index CSV cataloging all scans with their DICOM
+#    header fields (field strength, echo time, pixel spacing, etc.).
+#
+#  Inputs:
+#    $1 — Input DICOM directory
+#    $2 — Output directory
+#
+#  Outputs:
+#    nifti/       — Converted NIfTI files (.nii.gz) and JSON sidecar files
+#    site.txt     — Acquisition site name (from DICOM InstitutionName)
+#    images.csv   — Index of all DICOM files with header metadata
+#    log.txt      — Conversion log with path, site, date, and QIT version
+#
+#  Dependencies: dcm2niix, dcmdump (DCMTK), QIT, Python 3
 #
 #  Author: Ryan Cabeen
 #
@@ -14,10 +29,32 @@ workflow=$(cd $(dirname ${0}); cd ..; pwd -P)
 
 name=$(basename $0)
 
-if [ $# -ne "2" ]; then
-    echo "Usage: ${name} <input_dir> <output_dir>"
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Convert a directory of DICOM files to NIfTI format using dcm2niix.
+  Extracts the acquisition site name and builds an image index CSV.
+
+Usage:
+
+  ${name} <input_dir> <output_dir>
+
+Inputs:
+
+  input_dir   — Directory containing DICOM files
+  output_dir  — Output directory for NIfTI files and metadata
+
+Author: Ryan Cabeen
+"
     exit 1
-fi
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -ne "2" ]; then usage; fi
 
 input=${1}
 output=${2}

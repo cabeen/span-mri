@@ -1,17 +1,56 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Result Export
 #
-#    A script for exporting SPAN results from an individual
+#  Purpose:
+#    Exports processed SPAN results from all subjects into a flat directory
+#    structure for external use. Copies brain masks, lesion masks, fused
+#    parameter maps, and visualization mosaics with standardized naming.
+#
+#  Inputs:
+#    --input <dir>   Root project directory (containing process/)
+#    --output <dir>  Export output directory
+#    --grid          Optional: use qsubcmd for grid/cluster job submission
+#
+#  Outputs:
+#    images/         — Fused 4-channel parameter maps per subject
+#    labels/brain/   — Brain masks per subject
+#    labels/lesion/  — Lesion masks per subject
+#    mosaics/brain/  — Brain overlay PNGs per subject
+#    mosaics/lesion/ — Lesion overlay PNGs per subject
+#    names.txt       — List of exported subject UIDs
+#
+#  Dependencies: QIT
 #
 #  Author: Ryan Cabeen
 #
 ##############################################################################
 
-function usage 
+usage()
 {
-  echo "Usage: $(basename $0) <input_dir> <output_dir>"; exit 1
+    echo "
+Name: $(basename $0)
+
+Description:
+
+  Export processed SPAN results into a flat directory structure for
+  external use. Copies brain masks, lesion masks, fused parameter maps,
+  and visualization mosaics with standardized naming.
+
+Usage:
+
+  $(basename $0) --input <dir> --output <dir> [--grid]
+
+Options:
+
+  --input <dir>   Root project directory (containing process/)
+  --output <dir>  Export output directory
+  --grid          Use qsubcmd for grid/cluster job submission
+
+Author: Ryan Cabeen
+"
+    exit 1
 }
 
 function runit
@@ -33,6 +72,7 @@ while [ "$1" != "" ]; do
         --input)                   shift; input=$1;;
         --output)                  shift; output=$1;;
         --grid)                    rungrid=qsubcmd ;;
+        --help|-h)                 usage ;;
         * )                        posit="${posit} $1" ;;
     esac; shift
 done

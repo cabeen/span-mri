@@ -1,18 +1,49 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Rule-Based Brain Extraction (Legacy)
 #
-#    A script for skull stripping
+#  Purpose:
+#    Legacy version of the rule-based brain extraction script.
+#    Superseded by SpanAuxSegmentBrainRule.sh, which operates on the ADC
+#    baseline from the fit directory rather than a single input image.
+#    Uses the same multi-step morphological pipeline: foreground detection,
+#    contrast enhancement, NLM smoothing, gradient edge detection, graph
+#    segmentation, morphological refinement, and MRF-EM cleanup.
+#
+#  Inputs:
+#    $1 — Input NIfTI volume (single image)
+#    $2 — Output brain mask path
+#
+#  Dependencies: QIT
 #
 #  Author: Ryan Cabeen
 #
 ##############################################################################
 
-if [ $# -lt "1" ]; then
-    echo "Usage: ${name} <input> <output>"
+name=$(basename $0)
+
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Legacy rule-based brain extraction. Superseded by SpanAuxSegmentBrainRule.sh.
+  Uses a multi-step morphological pipeline for brain segmentation.
+
+Usage:
+
+  ${name} <input.nii.gz> <output.nii.gz>
+
+Author: Ryan Cabeen
+"
     exit 1
-fi
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -lt "2" ]; then usage; fi
 
 function runit
 {

@@ -1,5 +1,19 @@
 #!/usr/bin/env python
 ########################################################################################################################
+#
+#  SPAN U-Net Prediction — Command-Line Entry Point
+#
+#  Purpose:
+#    Command-line wrapper for U-Net brain segmentation inference.
+#    Loads a pre-trained model and applies it to a multi-channel NIfTI
+#    image to produce a binary brain mask.
+#
+#  Usage:
+#    python predict.py --model <model_path> --image <input.nii.gz> --output <output.nii.gz>
+#
+#  Dependencies: PyTorch, nibabel, scipy, numpy, unetseg module
+#
+########################################################################################################################
 '''
 Predict the labels of an image
 '''

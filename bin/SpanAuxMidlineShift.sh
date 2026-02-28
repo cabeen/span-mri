@@ -1,18 +1,67 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Midline Shift (Legacy Bash Version)
 #
-#    A script for computing midline shift
+#  Purpose:
+#    Legacy bash implementation of midline shift computation. Computes shift
+#    in mm and as a percentage of brain width using hardcoded atlas landmark
+#    coordinates. The Python version (SpanAuxMidline.py) is the preferred
+#    implementation as it computes additional metrics and hemisphere volumes.
+#
+#  Algorithm:
+#    1. Find the centroid of the largest CSF component within the midline mask
+#    2. Create landmark points at the centroid, anatomical center, and brain edges
+#    3. Compute pairwise distances between landmarks
+#    4. Shift_mm = distance from centroid to anatomical center
+#    5. Shift_percent = 200 * shift_mm / brain_width
+#
+#  Inputs:
+#    $1 — Brain mask in standard atlas space
+#    $2 — CSF mask
+#    $3 — Middle (midline) mask from atlas
+#    $4 — Output directory
+#
+#  Outputs:
+#    map.csv — Contains shift_mm and shift_percent (or NA if no CSF found)
+#
+#  Dependencies: QIT, Python 3 (for arithmetic)
 #
 #  Author: Ryan Cabeen
 #
 ##############################################################################
 
-if [ $# -ne "4" ]; then
-    echo "Usage: $(basename $0) <brain-mask> <csf-mask> <middle-mask> <output>"
+name=$(basename $0)
+
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Legacy midline shift computation. Computes shift in mm and as a percentage
+  of brain width using hardcoded atlas landmarks. The Python version
+  (SpanAuxMidline.py) is preferred as it computes additional metrics.
+
+Usage:
+
+  ${name} <brain-mask> <csf-mask> <middle-mask> <output>
+
+Inputs:
+
+  brain-mask    — Brain mask in standard atlas space
+  csf-mask      — CSF mask
+  middle-mask   — Midline mask from atlas
+  output        — Output directory (will contain map.csv)
+
+Author: Ryan Cabeen
+"
     exit 1
-fi
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -ne "4" ]; then usage; fi
 
 function runit
 {

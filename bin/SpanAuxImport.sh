@@ -1,9 +1,32 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Image Import and Organization
 #
-#    A script for importing images in a standard format.
+#  Purpose:
+#    Organizes converted NIfTI images into a standardized format for the
+#    pipeline. Identifies ADC, T2, and RARE modalities by filename patterns,
+#    fuses multi-file acquisitions, applies site-specific image orientation
+#    (from params/<site>/orient.json), and resamples to a common geometry.
+#
+#  Inputs:
+#    $1 — Input directory (native.convert, containing nifti/ and site.txt)
+#    $2 — Output directory
+#
+#  Outputs:
+#    rare.nii.gz  — T2-weighted anatomical image (if available)
+#    adc.nii.gz   — Multi-echo ADC volume (sorted by b-value, reversed)
+#    t2.nii.gz    — Multi-echo T2 volume (parsed from echo times)
+#    adc.txt      — ADC echo/b-value parameters
+#    t2.txt       — T2 echo time parameters
+#    site.txt     — Site identifier
+#    sid.txt      — Subject ID
+#    timepoint.txt — Timepoint (early/late)
+#    date.txt     — Acquisition date
+#
+#  Dependencies: QIT
+#
+#  Pipeline context: Called by SpanMainRun.sh as stage 3 (native.import)
 #
 #  Author: Ryan Cabeen
 #
@@ -13,10 +36,33 @@ workflow=$(cd $(dirname ${0}); cd ..; pwd -P)
 
 name=$(basename $0)
 
-if [ $# -ne "2" ]; then
-    echo "Usage: ${name} <input_dir> <output_dir>"
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Organize converted NIfTI images into a standardized format. Identifies
+  ADC, T2, and RARE modalities, applies site-specific orientation, and
+  resamples to a common geometry.
+
+Usage:
+
+  ${name} <input_dir> <output_dir>
+
+Inputs:
+
+  input_dir   — native.convert directory (containing nifti/ and site.txt)
+  output_dir  — Output directory for organized modalities
+
+Author: Ryan Cabeen
+"
     exit 1
-fi
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -ne "2" ]; then usage; fi
 
 input=${1}
 output=${2}

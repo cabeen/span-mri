@@ -1,9 +1,21 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Group Volume Fusion
 #
-#    A script for grouping results across individuals
+#  Purpose:
+#    Fuses individual harmonized parameter maps and segmentation masks
+#    into group-level mean and standard deviation images, stratified by
+#    site and timepoint. Produces population-average maps for visualization
+#    and quality control.
+#
+#  Expected directory layout:
+#    cases/process/{mouse,rat}/{early,late}/<subject_id>/
+#
+#  Outputs:
+#    group/fuse/<SITE>_<TIMEPOINT>.<PARAM>.{mean,std}.nii.gz
+#
+#  Dependencies: QIT (VolumeFuse)
 #
 #  Author: Ryan Cabeen
 #
@@ -12,7 +24,32 @@
 mybin=$(cd $(dirname ${0}); pwd -P)
 name=$(basename $0)
 
-if [ ! -e cases/process ]; then echo "process directory not found!"; exit; fi
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Fuse individual harmonized parameter maps and segmentation masks into
+  group-level mean and standard deviation images, stratified by site and
+  timepoint. Must be run from a directory containing cases/process/.
+
+Usage:
+
+  ${name} [--help]
+
+Outputs:
+
+  group/fuse/<SITE>_<TIMEPOINT>.<PARAM>.{mean,std}.nii.gz
+
+Author: Ryan Cabeen
+"
+    exit 1
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ ! -e cases/process ]; then echo "process directory not found!"; usage; fi
 
 function runit 
 {

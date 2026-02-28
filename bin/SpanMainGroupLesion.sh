@@ -1,4 +1,42 @@
 #! /bin/bash
+##############################################################################
+#
+#  SPAN Rodent MRI Analytics — Group Lesion/CSF Volume Fusion (Parallel)
+#
+#  Purpose:
+#    Uses GNU parallel for fast computation of group-level mean and std
+#    lesion/CSF probability maps across subjects, stratified by site and
+#    timepoint. Similar to SpanMainFuse.sh but optimized for parallel
+#    execution.
+#
+#  Dependencies: QIT (VolumeFuse), GNU parallel
+#
+#  Author: Ryan Cabeen
+#
+##############################################################################
+
+name=$(basename $0)
+
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Compute group-level mean and std lesion/CSF probability maps across
+  subjects using GNU parallel, stratified by site and timepoint.
+
+Usage:
+
+  ${name} [--help]
+
+Author: Ryan Cabeen
+"
+    exit 1
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
 
 for d in $PWD/process/*/*; do \
   if [ -e ${d}/standard.vis ]; then 

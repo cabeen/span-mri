@@ -1,3 +1,10 @@
-.DS_store
-tools/lib/brain-model
-tools/lib/unetseg/__pycache__
+.DS_Store
+lib/brain-model
+lib/unetseg/__pycache__
+lib/unetseg/env
+__pycache__
+*.pyc
+.pytest_cache/
+.claude
+demo/output/
+tests/tmp/

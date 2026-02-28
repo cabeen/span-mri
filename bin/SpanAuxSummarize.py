@@ -1,4 +1,22 @@
-#! /usr/bin/env python 
+#! /usr/bin/env python
+################################################################################
+#
+#  SPAN Rodent MRI Analytics -- Imaging Data Summary
+#
+#  Purpose:
+#    Creates a metadata summary table from DICOM JSON sidecar files and
+#    NIfTI headers. Extracts acquisition parameters (field strength, echo
+#    time, pixel spacing, etc.) and image dimensions for all scans in the
+#    project, producing a comprehensive CSV for quality control and analysis.
+#
+#  Inputs:
+#    --input <dir>   Root directory containing native.convert subdirectories
+#    --output <fn>   Output CSV file path
+#
+#  Dependencies: Python 3, nibabel
+#
+#  Author: Ryan Cabeen
+#
 ################################################################################
 
 """create a table summarizing the imaging data"""

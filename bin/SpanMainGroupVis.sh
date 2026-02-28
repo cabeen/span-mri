@@ -1,9 +1,18 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — Group Visualization Collection
 #
-#    A script for grouping results across individuals
+#  Purpose:
+#    Creates hard links to all subject visualization PNGs in a single flat
+#    directory for easy group-level review. Organizes by species, site,
+#    subject, timepoint, contrast, and label overlay type.
+#
+#  Expected directory layout:
+#    process/{mouse,rat}/{early,late}/<subject_id>/standard.vis/*.png
+#
+#  Outputs:
+#    group/vis/<species>_<site>_<sid>_<tp>_<contrast>_<vis>.png
 #
 #  Author: Ryan Cabeen
 #
@@ -12,7 +21,32 @@
 mybin=$(cd $(dirname ${0}); pwd -P)
 name=$(basename $0)
 
-if [ ! -e process ]; then echo "process directory not found!"; exit; fi
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Collect subject visualization PNGs into a single flat directory for
+  group-level review. Organizes by species, site, subject, timepoint,
+  contrast, and label overlay type.
+
+Usage:
+
+  ${name} [--help]
+
+Outputs:
+
+  group/vis/<species>_<site>_<sid>_<tp>_<contrast>_<vis>.png
+
+Author: Ryan Cabeen
+"
+    exit 1
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ ! -e process ]; then echo "process directory not found!"; usage; fi
 
 input=process
 output=group

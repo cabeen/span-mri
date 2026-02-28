@@ -1,0 +1,18 @@
+##############################################################################
+#
+#  SPAN-MRI Docker Compose Configuration
+#
+#  Usage:
+#    docker compose build
+#    docker compose run --rm span-mri SpanMainRun.sh --source /data/input --case /data/output/case
+#
+##############################################################################
+
+services:
+  span-mri:
+    build: .
+    image: span-mri:latest
+    volumes:
+      - ./input:/data/input:ro
+      - ./output:/data/output
+    working_dir: /data

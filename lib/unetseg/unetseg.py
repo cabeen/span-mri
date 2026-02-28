@@ -2,6 +2,17 @@
 #                                                                                                                      #
 # U-Net Segmentation Code                                                                                              #
 #                                                                                                                      #
+# A tri-planar 2D U-Net implementation for volumetric brain segmentation in rodent MRI.                                #
+# Rather than using a full 3D convolution (which requires more training data and GPU memory),                          #
+# this approach predicts 2D segmentation masks independently along each of the three                                   #
+# orthogonal axes (axial, coronal, sagittal) and averages the predictions for a robust                                 #
+# consensus result. This "tri-planar" strategy effectively captures 3D context through                                 #
+# the combination of three complementary 2D views.                                                                     #
+#                                                                                                                      #
+# The U-Net architecture uses a 5-level encoder-decoder with skip connections,                                         #
+# batch normalization, and LeakyReLU activations. The base number of filters (kernel)                                  #
+# is configurable and doubles at each encoder level: k, 2k, 4k, 8k, 16k.                                             #
+#                                                                                                                      #
 # Author: Ryan Cabeen, cabeen@gmail.com                                                                                #
 #                                                                                                                      #
 ########################################################################################################################
@@ -256,7 +267,7 @@ def predict_main(model, image, output):
             my_model.cpu()
     
     my_nii = nib.load(image)
-    my_image = np.array(my_nii.get_data(), dtype=np.float32)
+    my_image = np.array(my_nii.get_fdata(), dtype=np.float32)
     if len(my_image) == 3:
         my_image = np.expand_dims(my_image, axis=0)
     else:
@@ -290,10 +301,24 @@ def predict_main(model, image, output):
 ########################################################################################################################
 
 class Settings:
-    ''' A class defining an object that stores the settings for defining the u-net model'''
+    '''Configuration object for U-Net model architecture and training parameters.
+
+    Attributes:
+        epochs (int):   Number of training epochs (default: 40)
+        rate (float):   Learning rate for Adam optimizer (default: 0.0001)
+        rescale (int):  Target size for rescaling slices (default: 256x256)
+        kernel (int):   Base number of convolutional filters (default: 16).
+                        The U-Net uses k, 2k, 4k, 8k, 16k at successive levels.
+        batches (int):  Batch size for training (default: 20)
+        channels (int): Number of input channels (default: 1; 4 for SPAN brain model)
+        labels (int):   Number of output classes (default: 1 for binary segmentation)
+        augment (int):  Number of augmentation copies per slice (default: 0)
+        largest (bool): Whether to extract only the largest connected component
+        raw (bool):     If True, skip input normalization (default: False)
+    '''
 
     def __init__(self, args=None):
-        ''' Create the settings from command line arguments'''
+        '''Create settings from a dictionary (e.g., model checkpoint) or use defaults.'''
 
         if args:
             self.epochs = args['epochs']
@@ -321,7 +346,7 @@ class Settings:
 def load(model):
     ''' Load a previously trained u-net model'''
 
-    checkpoint = torch.load(model, map_location={'cuda:0':'cpu'})
+    checkpoint = torch.load(model, map_location={'cuda:0':'cpu'}, weights_only=False)
     my_settings = Settings(checkpoint)
     my_model = UNet2d(my_settings)
     my_model.load_state_dict(checkpoint['state'])
@@ -337,6 +362,21 @@ def largest(mask):
     return labs == max_ind
 
 def predict(settings, model, image):
+    '''Predict segmentation probabilities using tri-planar 2D inference.
+
+    For each of the three orthogonal axes, extracts 2D slices from the
+    rescaled volume, runs the U-Net on each slice, and reassembles the
+    predictions into a 3D volume. The three axis-specific predictions are
+    then averaged to produce the final consensus probability map.
+
+    Args:
+        settings (Settings): Model configuration
+        model (nn.Module): Trained U-Net model (with softmax)
+        image (Tensor): Input volume tensor of shape [1, C, I, J, K]
+
+    Returns:
+        numpy.ndarray: Probability map of shape [I, J, K] in original resolution
+    '''
 
     raw_shape = image.data[0][0].shape
     max_dim = torch.tensor(raw_shape).max()
@@ -474,7 +514,7 @@ class VolumeDataset(data.Dataset):
         self.current_image_nii = nib.load(os.path.join(self.images, self.cases[index]))
         self.current_mask_nii = nib.load(os.path.join(self.masks, self.cases[index]))
 
-        my_image = np.array(self.current_image_nii.get_data(), dtype=np.float32)
+        my_image = np.array(self.current_image_nii.get_fdata(), dtype=np.float32)
         if len(my_image) == 3:
             my_image = np.expand_dims(my_image, axis=0)
         else:
@@ -488,7 +528,7 @@ class VolumeDataset(data.Dataset):
             my_image[my_image >  10] = 0
 
         my_image = torch.from_numpy(my_image)
-        my_mask = torch.from_numpy(np.array(self.current_mask_nii.get_data() > 0, dtype=np.int64))
+        my_mask = torch.from_numpy(np.array(self.current_mask_nii.get_fdata() > 0, dtype=np.int64))
 
         return (my_image, my_mask)
 
@@ -580,10 +620,22 @@ class SliceDataset(data.Dataset):
 ########################################################################################################################
 
 class UNet2d(nn.Module):
-    ''' The u-net torch model definition '''
+    '''2D U-Net architecture for image segmentation.
+
+    A 5-level encoder-decoder network with skip connections. Each encoder
+    level consists of two 3x3 conv layers with batch normalization and
+    LeakyReLU activation, followed by 2x2 max pooling. Each decoder level
+    uses a 4x4 transposed convolution for upsampling, concatenates with the
+    corresponding encoder features (skip connection), and applies two 3x3
+    conv layers. The final layer maps to (labels+1) output channels.
+
+    Architecture (with base kernel size k):
+        Encoder:  channels → k → 2k → 4k → 8k → 16k
+        Decoder:  16k → 8k → 4k → 2k → k → (labels+1)
+    '''
 
     def __init__(self, settings):
-        ''' setup the network '''
+        '''Initialize the U-Net layers and apply weight initialization.'''
 
         super(UNet2d, self).__init__()
 

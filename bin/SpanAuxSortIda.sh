@@ -1,9 +1,16 @@
-#! /usr/bin/env bash 
+#! /usr/bin/env bash
 ##############################################################################
 #
-#  SPAN Rodent MRI Analytics 
+#  SPAN Rodent MRI Analytics — LONI IDA Data Sorting
 #
-#    A script for sorting data downloaded from the LONI IDA
+#  Purpose:
+#    Sorts LONI IDA-imported data by subject ID. Parses subject IDs from
+#    underscore-delimited directory names and reorganizes files into
+#    per-subject subdirectories.
+#
+#  Inputs:
+#    $1 — Input directory with IDA-format subdirectories
+#    $2 — Output directory organized by subject ID
 #
 #  Author: Ryan Cabeen
 #
@@ -13,10 +20,28 @@ workflow=$(cd $(dirname ${0}); cd ..; pwd -P)
 
 name=$(basename $0)
 
-if [ $# -ne "2" ]; then
-    echo "Usage: ${name} <input_dir> <output_dir>"
+usage()
+{
+    echo "
+Name: ${name}
+
+Description:
+
+  Sort LONI IDA-imported data by subject ID. Parses subject IDs from
+  underscore-delimited directory names and reorganizes files into
+  per-subject subdirectories.
+
+Usage:
+
+  ${name} <input_dir> <output_dir>
+
+Author: Ryan Cabeen
+"
     exit 1
-fi
+}
+
+if [ "${1:-}" == "--help" ] || [ "${1:-}" == "-h" ]; then usage; fi
+if [ $# -ne "2" ]; then usage; fi
 
 input=${1}
 output=${2}

@@ -1,0 +1,9 @@
+.git
+.claude
+.DS_Store
+lib/brain-model
+__pycache__
+demo/output/
+tests/tmp/
+tests/data/
+*.pyc
